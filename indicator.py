@@ -1,12 +1,32 @@
-import pandas as pd
 
-from routers import MyTWSESQLRouter
 
-HOST = "localhost:3306"
-USER = "root"
-PASSWORD = "stock"
-DBNAME = "TWSE"
+class StockIndicator:
+    def __init__(self, code, trade, data, stock_type='stock'):
+        """
+        Initialize the StockIndicator with the given parameters.
 
-Router = MyTWSESQLRouter(HOST, USER, PASSWORD, DBNAME)
-data = Router.get_data("2025-01-01", "2025-06-31", "2330")
+        Args:
+            start_date (str): The start date for the stock data.
+            end_date (str): The end date for the stock data.
+            code (str): The stock code.
+            stock_type (str, optional): The type of stock. Defaults to 'stock'.
+        """
+        self.code = code
+        self.trade = trade
+        self.data = data
+        self.stock_type = stock_type
+        self.tax_rate = self._get_tax_rate()
 
+    def _get_tax_rate(self):
+        """
+        Get the tax rate based on the stock type.
+
+        Returns:
+            float: The tax rate for the stock type.
+        """
+        if self.stock_type == 'stock':
+            return 0.003 + 0.00285
+        elif self.stock_type == 'etf':
+            return 0.001 + 0.00285
+        else:
+            raise ValueError("Invalid stock type. Must be 'stock' or 'etf'.")

@@ -1,8 +1,12 @@
 import pandas as pd
 
-class StockIndicator:
-    def __init__(self, code, stock_type='stock'):
-        self.code = code
-        self.stock_type = stock_type
-        self.total_profit = 0.0
-        self.total
+from routers import MyTWSESQLRouter
+
+HOST = "localhost:3306"
+USER = "root"
+PASSWORD = "stock"
+DBNAME = "TWSE"
+
+Router = MyTWSESQLRouter(HOST, USER, PASSWORD, DBNAME)
+data = Router.get_data("2025-01-01", "2025-06-31", "2330")
+

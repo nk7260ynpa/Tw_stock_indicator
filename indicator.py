@@ -30,3 +30,6 @@ class StockIndicator:
             return 0.001 + 0.00285
         else:
             raise ValueError("Invalid stock type. Must be 'stock' or 'etf'.")
+        
+    def _get_profit_rate(self):
+        return (self.trade["sell_price"] - self.trade["buy_price"]) / self.trade["buy_price"] - self.tax_rate

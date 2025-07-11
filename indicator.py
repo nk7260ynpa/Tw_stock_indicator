@@ -16,6 +16,7 @@ class StockIndicator:
         self.data = data
         self.stock_type = stock_type
         self.tax_rate = self._get_tax_rate()
+        self.trade_times = self._get_trade_times()
 
     def _get_tax_rate(self):
         """
@@ -33,3 +34,12 @@ class StockIndicator:
         
     def _get_profit_rate(self):
         return (self.trade["sell_price"] - self.trade["buy_price"]) / self.trade["buy_price"] - self.tax_rate
+
+    def _get_trade_times(self):
+        """
+        Get the number of trade times
+
+        Returns:
+            int: The number of trade times
+        """
+        return self.trade.shape[0]

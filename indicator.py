@@ -19,6 +19,7 @@ class StockIndicator:
         self.tax_rate = self._get_tax_rate()
         self.trade_times = self._get_trade_times()
         self.average_profit_rate = self._get_average_profit_rate()
+        self.onopen_days = self._get_onopen_days()
 
     def _get_tax_rate(self):
         """
@@ -56,4 +57,13 @@ class StockIndicator:
         if self.trade_times == 0:
             return 0.0
         return self.profit_rate / self.trade_times
+    
+    def _get_onopen_days(self):
+        """
+        Get the number of days the stock was open.
+
+        Returns:
+            int: The number of open days.
+        """
+        return (self.trade["cover_time"] - self.trade["order_time"]).dt.days
 

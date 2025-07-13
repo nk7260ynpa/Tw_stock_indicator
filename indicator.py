@@ -1,3 +1,4 @@
+import numpy as np
 import pandas as pd
 
 class StockIndicator:
@@ -85,4 +86,16 @@ class StockIndicator:
             int: The number of open days.
         """
         return (self.trade["cover_time"] - self.trade["order_time"]).dt.days
+    
+    def _get_earn_rate(self):
+        """
+        Calculate the earn rate based on the profit rate and the number of trade times.
+
+        Returns:
+            float: The earn rate.
+        """
+        if self.trade_times == 0:
+            return 0.0
+        earn_rate = self.data["profit_rate"] > 0 / self.trade.shape[0]
+        return earn_rate
 

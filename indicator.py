@@ -1,4 +1,4 @@
-
+import pandas as pd
 
 class StockIndicator:
     def __init__(self, code, trade, data, stock_type='stock'):
@@ -30,12 +30,18 @@ class StockIndicator:
         """
         if self.stock_type == 'stock':
             return 0.003 + 0.00285
-        elif self.stock_type == 'etf':
+        elif self.stock_type == 'eft':
             return 0.001 + 0.00285
         else:
             raise ValueError("Invalid stock type. Must be 'stock' or 'etf'.")
         
     def _get_profit_rate(self):
+        """
+        Calculate the profit rate based on the trade data.
+        
+        Returns:
+            float: The profit rate calculated from the trade data.
+        """
         return (self.trade["sell_price"] - self.trade["buy_price"]) / self.trade["buy_price"] - self.tax_rate
 
     def _get_trade_times(self):

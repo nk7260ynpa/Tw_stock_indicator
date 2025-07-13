@@ -23,6 +23,7 @@ class StockIndicator:
         self.onopen_days = self._get_onopen_days()
         self.earn_rate = self._get_earn_rate()
         self.earn_total_profit_rate = self._get_earn_total_profit_rate()
+        self.loss_total_profit_rate = self._get_loss_total_profit_rate()
 
     def _data_preprocess(self):
         """
@@ -112,5 +113,15 @@ class StockIndicator:
         earn_total_profit_rate = self.data[self.data["profit_rate"] > 0]["profit_rate"].sum() / self.trade.shape[0]
         return earn_total_profit_rate
     
+    def _get_loss_total_profit_rate(self):
+        """
+        Calculate the total profit rate for the loss trades.
 
-
+        Returns:
+            float: The total profit rate for the loss trades.
+        """
+        if self.trade_times == 0:
+            return 0.0
+        loss_total_profit_rate = self.data[self.data["profit_rate"] <= 0]["profit_rate"].sum() / self.trade.shape[0]
+        return loss_total_profit_rate
+    

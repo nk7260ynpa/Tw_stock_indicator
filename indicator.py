@@ -22,6 +22,7 @@ class StockIndicator:
         self.average_profit_rate = self._get_average_profit_rate()
         self.onopen_days = self._get_onopen_days()
         self.earn_rate = self._get_earn_rate()
+        self.earn_total_profit_rate = self._get_earn_total_profit_rate()
 
     def _data_preprocess(self):
         """
@@ -98,4 +99,18 @@ class StockIndicator:
             return 0.0
         earn_rate = self.data["profit_rate"] > 0 / self.trade.shape[0]
         return earn_rate
+    
+    def _get_earn_total_profit_rate(self):
+        """
+        Calculate the total profit rate for the earn trades.
+
+        Returns:
+            float: The total profit rate for the earn trades.
+        """
+        if self.trade_times == 0:
+            return 0.0
+        earn_total_profit_rate = self.data[self.data["profit_rate"] > 0]["profit_rate"].sum() / self.trade.shape[0]
+        return earn_total_profit_rate
+    
+
 

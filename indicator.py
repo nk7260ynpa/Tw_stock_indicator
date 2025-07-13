@@ -13,13 +13,26 @@ class StockIndicator:
         """
         self.code = code
         self.trade = trade
-        self.data = data
         self.stock_type = stock_type
-        self.profit_rate = self._get_profit_rate()
         self.tax_rate = self._get_tax_rate()
+        self.data = data
+        self.total_profit_rate = self._get_total_profit_rate()
         self.trade_times = self._get_trade_times()
         self.average_profit_rate = self._get_average_profit_rate()
         self.onopen_days = self._get_onopen_days()
+        self.earn_rate = self._get_earn_rate()
+
+    def _data_preprocess(self):
+        """
+        Preprocess the stock data to ensure it is in the correct format.
+        
+        This method should be called before any calculations are performed.
+        """
+        if not isinstance(self.data, pd.DataFrame):
+            raise ValueError("Data must be a pandas DataFrame.")
+        if 'date' not in self.data.columns:
+            raise ValueError("Data must contain a 'date' column.")
+        self.data["profit_rate"] = (self.data["close"] - self.data["open"]) / self.data["open"] - self.tax_rate
 
     def _get_tax_rate(self):
         """
@@ -35,7 +48,7 @@ class StockIndicator:
         else:
             raise ValueError("Invalid stock type. Must be 'stock' or 'etf'.")
         
-    def _get_profit_rate(self):
+    def _get_total_profit_rate(self):
         """
         Calculate the profit rate based on the trade data.
         

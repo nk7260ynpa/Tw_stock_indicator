@@ -24,6 +24,7 @@ class StockIndicator:
         self.earn_rate = self._get_earn_rate()
         self.earn_total_profit_rate = self._get_earn_total_profit_rate()
         self.loss_total_profit_rate = self._get_loss_total_profit_rate()
+        self.total_odds = self._get_total_odds()
 
     def _data_preprocess(self):
         """
@@ -125,3 +126,13 @@ class StockIndicator:
         loss_total_profit_rate = self.data[self.data["profit_rate"] <= 0]["profit_rate"].sum() / self.trade.shape[0]
         return loss_total_profit_rate
     
+    def _get_total_odds(self):
+        """
+        Calculate the total odds based on the profit rate and the number of trade times.
+
+        Returns:
+            float: The total odds.
+        """
+        if self.trade_times == 0:
+            return 0.0
+        return  abs(self.earn_total_profit_rate / self.loss_total_profit_rate) 

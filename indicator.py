@@ -59,7 +59,7 @@ class StockIndicator:
         Returns:
             float: The profit rate calculated from the trade data.
         """
-        return (self.trade["sell_price"] - self.trade["buy_price"]) / self.trade["buy_price"] - self.tax_rate
+        return np.sum(self.data["profit_rate"])
 
     def _get_trade_times(self):
         """

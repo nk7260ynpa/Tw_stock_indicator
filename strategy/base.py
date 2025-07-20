@@ -22,3 +22,11 @@ class BaseStrategy(ABC):
 
     def sell_stock(self):
         self.postition = 0
+
+    def __call__(self):
+        if self.buy_condition():
+            self.buy_stock()
+        elif self.sell_condition():
+            self.sell_stock()
+        else:
+            print(f"{self.name} is holding position. Current position: {self.position}")

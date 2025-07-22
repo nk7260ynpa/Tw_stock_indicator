@@ -4,8 +4,7 @@ class BaseStrategy(ABC):
     """
     Base class for all trading strategies.
     """
-    def __init__(self, name: str):
-        self.name = name
+    def __init__(self):
         self.position = 0
 
     @abstractmethod

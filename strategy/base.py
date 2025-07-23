@@ -35,4 +35,4 @@ class BaseStrategy(ABC):
         elif self.sell_condition():
             self.sell_stock()
         else:
-            print(f"{self.name} is holding position. Current position: {self.position}")
+            print(f"Current position: {self.position}")

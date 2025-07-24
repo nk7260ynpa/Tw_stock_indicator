@@ -9,6 +9,7 @@ class BaseStrategy(ABC):
 
     @abstractmethod
     def buy_condition(self) -> bool:
+        """Determine if the strategy's buy condition is met."""
         pass
 
     @abstractmethod

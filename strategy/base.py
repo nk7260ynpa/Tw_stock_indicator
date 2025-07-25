@@ -8,12 +8,12 @@ class BaseStrategy(ABC):
         self.position = 0
 
     @abstractmethod
-    def buy_condition(self) -> bool:
+    def buy_condition(self):
         """Determine if the strategy's buy condition is met."""
         pass
 
     @abstractmethod
-    def sell_condition(self) -> bool:
+    def sell_condition(self):
         pass
 
     def buy_stock(self):

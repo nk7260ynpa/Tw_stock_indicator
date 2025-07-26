@@ -29,6 +29,13 @@ class BaseStrategy(ABC):
             print(f"{self.name} sold a stock. Current position: {self.position}")
         else:
             print(f"{self.name} cannot sell stock. No position to sell.")
+    
+    def position_mapping(self):
+        """Map the current position to a string representation."""
+        if self.position > 0:
+            return "Buy"
+        else:
+            return "Sell"
 
     def __call__(self):
         if self.buy_condition():

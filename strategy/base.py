@@ -40,7 +40,9 @@ class BaseStrategy(ABC):
     def __call__(self):
         if self.buy_condition():
             self.buy_stock()
+
         elif self.sell_condition():
             self.sell_stock()
+            
         else:
             print(f"Current position: {self.position}")

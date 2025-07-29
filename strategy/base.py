@@ -34,6 +34,7 @@ class BaseStrategy(ABC):
         
         if self.position > 0:
             return "Buy"
+        
         else:
             return "Sell"
 

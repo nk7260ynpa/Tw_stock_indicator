@@ -31,6 +31,7 @@ class BaseStrategy(ABC):
             print(f"{self.name} cannot sell stock. No position to sell.")
     
     def position_mapping(self):
+        
         if self.position > 0:
             return "Buy"
         

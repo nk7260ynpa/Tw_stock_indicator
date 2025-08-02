@@ -1,7 +1,10 @@
 import numpy as np
 import pandas as pd
 
-class StockIndicator:
+class StockIndicator():
+
+
+class StocIndicator:
     def __init__(self, code, trade, data, stock_type='stock'):
         """
         Initialize the StockIndicator with the given parameters.

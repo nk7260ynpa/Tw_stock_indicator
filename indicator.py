@@ -7,9 +7,9 @@ class StockIndicator:
         Initialize the StockIndicator with the given parameters.
 
         Args:
-            start_date (str): The start date for the stock data.
-            end_date (str): The end date for the stock data.
             code (str): The stock code.
+            trade (pd.DataFrame): The trade data containing order and cover times.
+            data (pd.DataFrame): The stock data containing open, close prices, and dates.
             stock_type (str, optional): The type of stock. Defaults to 'stock'.
         """
         self.code = code

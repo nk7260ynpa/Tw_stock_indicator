@@ -33,4 +33,14 @@ class StockIndicator():
 
         profit = np.sum(self.trade['cover_price'] - self.trade['order_price'])
         return profit
-    
+
+    def total_trade_times(self):
+        """
+        Calculate the total number of trades.
+        Returns:
+            int: The total number of trades.
+        """
+        if self.trade.empty:
+            return 0
+
+        return self.trade.shape[0]

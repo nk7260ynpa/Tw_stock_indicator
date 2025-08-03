@@ -22,3 +22,15 @@ class StockIndicator():
             raise ValueError("stock_type must be either 'Stock' or 'ETF'.")
         return stock_type
     
+    def total_calculate_profit(self):
+        """
+        Calculate the profit from the trade data.
+        Returns:
+            pd.DataFrame: A DataFrame containing the profit for each trade.
+        """
+        if self.trade.empty:
+            return 0.0
+
+        profit = np.sum(self.trade['cover_price'] - self.trade['order_price'])
+        return profit
+    

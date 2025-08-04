@@ -5,6 +5,7 @@ class StockIndicator():
     def __init__(self, trade, start_date, end_date, stock_type='stock'):
         """
         Initialize the StockIndicator with the given parameters.
+        
         Args:
             trade (pd.DataFrame): The trade data containing order and cover times.
                 contains columns 'order_day', 'cover_day', 'order_price', 'cover_price'.
@@ -25,8 +26,9 @@ class StockIndicator():
     def total_calculate_profit(self):
         """
         Calculate the profit from the trade data.
+
         Returns:
-            pd.DataFrame: A DataFrame containing the profit for each trade.
+            float: The total profit from the trades.
         """
         if self.trade.empty:
             return 0.0
@@ -37,6 +39,7 @@ class StockIndicator():
     def total_trade_times(self):
         """
         Calculate the total number of trades.
+
         Returns:
             int: The total number of trades.
         """

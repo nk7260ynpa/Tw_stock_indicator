@@ -56,3 +56,21 @@ class StockIndicator():
 
         return self.trade.shape[0]
     
+    def mean_profit(self):
+        """
+        Calculate the mean profit per trade.
+
+        Returns:
+            float: The mean profit per trade.
+        """
+        if self.trade.empty:
+            return 0.0
+
+        total_profit = self.total_calculate_profit()
+        total_trades = self.total_trade_times()
+
+        if total_trades == 0:
+            return 0.0
+
+        return total_profit / total_trades
+    

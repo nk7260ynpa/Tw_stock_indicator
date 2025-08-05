@@ -34,6 +34,14 @@ class StockIndicator():
             return 0.0
 
         profit = np.sum(self.trade['cover_price'] - self.trade['order_price'])
+        if self.stock_type == 'ETF':
+            profit *= 1 - (0.001 + 0.00285)
+        
+        elif self.stock_type == 'Stock':
+            profit *= 1 - (0.003 + 0.00285)
+
+        else:
+            raise ValueError("Invalid stock type. Must be either 'Stock' or 'ETF'.")
         return profit
 
     def total_trade_times(self):
@@ -47,3 +55,4 @@ class StockIndicator():
             return 0
 
         return self.trade.shape[0]
+    

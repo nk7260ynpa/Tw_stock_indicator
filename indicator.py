@@ -92,3 +92,15 @@ class StockIndicator():
 
         return len(win_trades) / total_trades * 100
     
+    def total_holding_days(self):
+        """
+        Calculate the total holding days for all trades.
+
+        Returns:
+            int: The total number of holding days.
+        """
+        if self.trade.empty:
+            return 0
+
+        holding_days = (self.trade['cover_day'] - self.trade['order_day']).sum()
+        return holding_days

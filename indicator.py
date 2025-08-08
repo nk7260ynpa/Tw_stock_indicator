@@ -104,3 +104,21 @@ class StockIndicator():
 
         holding_days = (self.trade['cover_day'] - self.trade['order_day']).sum()
         return holding_days
+    
+    def cal_win_rate(self):
+        """
+        Calculate the win rate of the trades.
+
+        Returns:
+            float: The win rate as a percentage.
+        """
+        if self.trade.empty:
+            return 0.0
+
+        win_trades = self.trade[self.trade['cover_price'] > self.trade['order_price']]
+        total_trades = self.total_trade_times()
+
+        if total_trades == 0:
+            return 0.0
+
+        return len(win_trades) / total_trades * 100

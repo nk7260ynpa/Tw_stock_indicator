@@ -140,3 +140,21 @@ class StockIndicator():
             return 0.0
 
         return len(loss_trades) / total_trades * 100
+    
+    def cal_win_loss_ratio(self):
+        """
+        Calculate the win-loss ratio of the trades.
+
+        Returns:
+            float: The win-loss ratio.
+        """
+        if self.trade.empty:
+            return 0.0
+
+        win_trades = self.trade[self.trade['cover_price'] > self.trade['order_price']]
+        loss_trades = self.trade[self.trade['cover_price'] < self.trade['order_price']]
+
+        if len(loss_trades) == 0:
+            return float('inf')
+
+        return len(win_trades) / len(loss_trades)

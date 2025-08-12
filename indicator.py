@@ -175,4 +175,21 @@ class StockIndicator():
 
         holding_days = (win_trades['cover_day'] - win_trades['order_day']).mean()
         return holding_days
+    
+    def cal_loss_holding_days(self):
+        """
+        Calculate the average holding days for losing trades.
+
+        Returns:
+            float: The average holding days for losing trades.
+        """
+        if self.trade.empty:
+            return 0.0
+
+        loss_trades = self.trade[self.trade['cover_price'] < self.trade['order_price']]
+        if loss_trades.empty:
+            return 0.0
+
+        holding_days = (loss_trades['cover_day'] - loss_trades['order_day']).mean()
+        return holding_days
 

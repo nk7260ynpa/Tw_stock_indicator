@@ -19,6 +19,9 @@ class StockIndicator():
         self.stock_type = self._validate_stock_type(stock_type)
 
     def _validate_stock_type(self, stock_type):
+        """
+        Validate the stock type.
+        """
         if stock_type not in ["Stock", "ETF"]:
             raise ValueError("stock_type must be either 'Stock' or 'ETF'.")
         return stock_type

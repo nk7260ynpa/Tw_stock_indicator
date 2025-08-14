@@ -196,3 +196,5 @@ class StockIndicator():
         holding_days = (loss_trades['cover_day'] - loss_trades['order_day']).mean()
         return holding_days
 
+    def jsonlize(self):
+        total_profit = self.total_calculate_profit()

@@ -198,3 +198,4 @@ class StockIndicator():
 
     def jsonlize(self):
         total_profit = self.total_calculate_profit()
+        total_trades = self.total_trade_times()

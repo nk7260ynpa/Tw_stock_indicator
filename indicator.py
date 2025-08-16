@@ -17,6 +17,8 @@ class StockIndicator():
         self.start_date = start_date
         self.end_date = end_date
         self.stock_type = self._validate_stock_type(stock_type)
+        self.total_profit = self.cal_total_profit()
+        self.total_trade_time = self.cal_total_trade_times()
 
     def _validate_stock_type(self, stock_type):
         """
@@ -26,7 +28,7 @@ class StockIndicator():
             raise ValueError("stock_type must be either 'Stock' or 'ETF'.")
         return stock_type
     
-    def total_calculate_profit(self):
+    def cal_total_profit(self):
         """
         Calculate the profit from the trade data.
 
@@ -47,7 +49,7 @@ class StockIndicator():
             raise ValueError("Invalid stock type. Must be either 'Stock' or 'ETF'.")
         return profit
 
-    def total_trade_times(self):
+    def cal_total_trade_times(self):
         """
         Calculate the total number of trades.
 
@@ -59,7 +61,7 @@ class StockIndicator():
 
         return self.trade.shape[0]
     
-    def mean_profit(self):
+    def cal_mean_profit(self):
         """
         Calculate the mean profit per trade.
 
@@ -69,8 +71,8 @@ class StockIndicator():
         if self.trade.empty:
             return 0.0
 
-        total_profit = self.total_calculate_profit()
-        total_trades = self.total_trade_times()
+        total_profit = self.total_profit
+        total_trades = self.total_trade_time
 
         if total_trades == 0:
             return 0.0
@@ -195,7 +197,3 @@ class StockIndicator():
 
         holding_days = (loss_trades['cover_day'] - loss_trades['order_day']).mean()
         return holding_days
-
-    def jsonlize(self):
-        total_profit = self.total_calculate_profit()
-        total_trades = self.total_trade_times()

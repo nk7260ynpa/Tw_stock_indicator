@@ -22,6 +22,7 @@ class StockIndicator():
         self.mean_profit = self.cal_mean_profit()
         self.mean_holding_days = self.cal_mean_holding_days()
         self.earn_rate = self.cal_earn_rate()
+        self.loss_rate = self.cal_loss_rate()
 
     def _validate_stock_type(self, stock_type):
         """
@@ -106,5 +107,18 @@ class StockIndicator():
             return 0.0
 
         earn_times = np.sum(self.trade['cover_day']>self.trade['order_day'])
-
         return earn_times / self.total_trade_times
+    
+    def cal_loss_rate(self):
+        """
+        Calculate the loss rate based on the total trades and the number of losing trades.
+
+        Returns:
+            float: The loss rate.
+        """
+        if self.trade.empty:
+            return 0.0
+
+        losing_trades = np.sum(self.trade['cover_price'] <= self.trade['order_price'])
+        return losing_trades / self.total_trade_times 
+    

@@ -18,7 +18,10 @@ class StockIndicator():
         self.end_date = end_date
         self.stock_type = self._validate_stock_type(stock_type)
         self.total_profit = self.cal_total_profit()
-        self.total_trade_time = self.cal_total_trade_times()
+        self.total_trade_times = self.cal_total_trade_times()
+        self.mean_profit = self.cal_mean_profit()
+        self.mean_holding_days = self.cal_mean_holding_days()
+        self.earn_rate = self.cal_earn_rate()
 
     def _validate_stock_type(self, stock_type):
         """
@@ -79,4 +82,29 @@ class StockIndicator():
 
         return total_profit / total_trades
     
+    def cal_mean_holding_days(self):
+        """
+        Calculate the mean holding days for the trades.
+
+        Returns:
+            float: The mean holding days.
+        """
+        if self.trade.empty:
+            return 0.0
+
+        holding_days = (self.trade['cover_day'] - self.trade['order_day']).dt.days
+        return holding_days.mean()
     
+    def cal_earn_rate(self):
+        """
+        Calculate the earning rate based on the total profit and the initial investment.
+
+        Returns:
+            float: The earning rate.
+        """
+        if self.trade.empty:
+            return 0.0
+
+        earn_times = np.sum(self.trade['cover_day']>self.trade['order_day'])
+
+        return earn_times / self.total_trade_times

@@ -24,6 +24,7 @@ class StockIndicator():
         self.earn_rate = self.cal_earn_rate()
         self.loss_rate = self.cal_loss_rate()
         self.mean_earn = self.cal_mean_earn()
+        self.mean_loss = self.cal_mean_loss()
         self.earn_loss_odds = self.cal_earn_loss_odds()
 
     def _validate_stock_type(self, stock_type):
@@ -141,6 +142,24 @@ class StockIndicator():
             return 0.0
         
         return total_profit / earn_times
+    
+    def cal_mean_loss(self):
+        """
+        Calculate the mean loss from the trades.
+
+        Returns:
+            float: The mean loss.
+        """
+        if self.trade.empty:
+            return 0.0
+
+        losing_times = np.sum(self.trade['cover_price'] <= self.trade['order_price'])
+        total_loss = np.sum(self.trade['order_price'] - self.trade['cover_price'])
+
+        if losing_times == 0:
+            return 0.0
+        
+        return total_loss / losing_times
     
     def cal_earn_loss_odds(self):
         """

@@ -178,3 +178,15 @@ class StockIndicator():
             return float('inf')
 
         return earn_times / losing_times
+    
+    def cal_expect_profit(self):
+        """
+        Calculate the expected profit based on the mean profit and the total trade times.
+
+        Returns:
+            float: The expected profit.
+        """
+        if self.trade.empty:
+            return 0.0
+
+        return self.mean_profit * self.total_trade_times

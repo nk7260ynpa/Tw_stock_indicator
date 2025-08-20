@@ -26,6 +26,7 @@ class StockIndicator():
         self.mean_earn = self.cal_mean_earn()
         self.mean_loss = self.cal_mean_loss()
         self.earn_loss_odds = self.cal_earn_loss_odds()
+        self.mean_earn_open_days = self.cal_mean_earn_open_days()
 
     def _validate_stock_type(self, stock_type):
         """
@@ -190,3 +191,17 @@ class StockIndicator():
             return 0.0
 
         return self.mean_profit * self.total_trade_times
+    
+    def cal_mean_earn_open_days(self):
+        """
+        Calculate the number of days when the stock was open for trading.
+
+        Returns:
+            int: The number of open days.
+        """
+        if self.trade.empty:
+            return 0
+
+        earn_df = self.trade['order_price'] < self.trade['cover_price']
+        days = earn_df["cover_day"] - earn_df["order_day"]
+        return np.mean(days)

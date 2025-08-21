@@ -26,6 +26,7 @@ class StockIndicator():
         self.mean_earn = self.cal_mean_earn()
         self.mean_loss = self.cal_mean_loss()
         self.earn_loss_odds = self.cal_earn_loss_odds()
+        self.expect_profit = self.cal_expect_profit()
         self.mean_earn_open_days = self.cal_mean_earn_open_days()
 
     def _validate_stock_type(self, stock_type):

@@ -206,3 +206,5 @@ class StockIndicator():
         earn_df = self.trade['order_price'] < self.trade['cover_price']
         days = earn_df["cover_day"] - earn_df["order_day"]
         return np.mean(days)
+    
+    def cal

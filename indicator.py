@@ -207,4 +207,4 @@ class StockIndicator():
         days = earn_df["cover_day"] - earn_df["order_day"]
         return np.mean(days)
     
-    def cal
+    def cal_

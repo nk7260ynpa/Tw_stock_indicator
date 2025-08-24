@@ -27,6 +27,8 @@ class StockIndicator():
         self.mean_loss = self.cal_mean_loss()
         self.earn_loss_odds = self.cal_earn_loss_odds()
         self.expect_profit = self.cal_expect_profit()
+        self.mean_earn_open_days = self.cal_mean_earn_open_days()
+        self.mean_loss_open_days = self.cal_mean_loss_open_days()
 
     def _validate_stock_type(self, stock_type):
         """
@@ -80,7 +82,7 @@ class StockIndicator():
             return 0.0
 
         total_profit = self.total_profit
-        total_trades = self.total_trade_time
+        total_trades = self.total_trade_times
 
         if total_trades == 0:
             return 0.0
@@ -193,4 +195,38 @@ class StockIndicator():
         expect_profit = self.earn_rate * self.mean_earn - self.loss_rate * self.mean_loss
 
         return expect_profit
+    
+    def cal_mean_earn_open_days(self):
+        """
+        Calculate the mean earning open days for the trades.
+
+        Returns:
+            float: The mean earning open days.
+        """
+        if self.trade.empty:
+            return 0.0
+
+        earn_trades = self.trade[self.trade['cover_day'] > self.trade['order_day']]
+        if earn_trades.empty:
+            return 0.0
+
+        open_days = (earn_trades['cover_day'] - earn_trades['order_day']).dt.days
+        return open_days.mean()
+    
+    def cal_mean_loss_open_days(self):
+        """
+        Calculate the mean losing open days for the trades.
+
+        Returns:
+            float: The mean losing open days.
+        """
+        if self.trade.empty:
+            return 0.0
+
+        losing_trades = self.trade[self.trade['cover_price'] <= self.trade['order_price']]
+        if losing_trades.empty:
+            return 0.0
+
+        open_days = (losing_trades['cover_day'] - losing_trades['order_day']).dt.days
+        return open_days.mean()
     

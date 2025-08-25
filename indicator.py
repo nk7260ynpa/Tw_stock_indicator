@@ -229,3 +229,25 @@ class StockIndicator():
         open_days = (losing_trades['cover_day'] - losing_trades['order_day']).dt.days
         return open_days.mean()
     
+    def summary(self):
+        """
+        Summarize all calculated indicators in a dictionary.
+        
+        Returns:
+            dict: A dictionary containing all calculated indicators.
+        """
+        return {
+            "total_profit": self.total_profit,
+            "total_trade_times": self.total_trade_times,
+            "mean_profit": self.mean_profit,
+            "mean_holding_days": self.mean_holding_days,
+            "earn_rate": self.earn_rate,
+            "loss_rate": self.loss_rate,
+            "mean_earn": self.mean_earn,
+            "mean_loss": self.mean_loss,
+            "earn_loss_odds": self.earn_loss_odds,
+            "expect_profit": self.expect_profit,
+            "mean_earn_open_days": self.mean_earn_open_days,
+            "mean_loss_open_days": self.mean_loss_open_days
+        }
+    

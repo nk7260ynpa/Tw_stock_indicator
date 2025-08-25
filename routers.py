@@ -73,7 +73,7 @@ class MyTWSESQLRouter:
         self.db_name = "TWSE"
         self.conn = self._build_mysql_conn()
 
-    def _data_prepeocess(self, data):
+    def _data_preprocess(self, data):
         """
         Preprocess the data by converting date columns to datetime format.
 
@@ -116,7 +116,23 @@ class MyTWSESQLRouter:
         """
         results = self.conn.execute(text(query)).fetchall()
         data = pd.DataFrame(results)
-        data = self._data_prepeocess(data)
+        data = self._data_preprocess(data)
         return data
+    
+    def _build_mysql_conn(self):
+        """
+        Build a MySQL connection based on the provided parameters.
+
+        Args:
+            self.host (str): The MySQL host.
+            self.user (str): The MySQL user.
+            self.password (str): The MySQL password.
+            self.db_name (str, optional): The name of the database. Defaults to None.
+
+        Returns:
+            conn: The MySQL connection object.
+        """
+        conn = mysql_conn_db(self.host, self.user, self.password, self.db_name)
+        return conn
         
         

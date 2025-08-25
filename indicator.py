@@ -1,5 +1,4 @@
 import numpy as np
-import pandas as pd
 
 class StockIndicator():
     def __init__(self, trade, start_date, end_date, stock_type='stock'):

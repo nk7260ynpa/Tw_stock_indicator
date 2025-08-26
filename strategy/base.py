@@ -1,48 +1,31 @@
 from abc import ABC, abstractmethod
+import pandas as pd
 
 class BaseStrategy(ABC):
     """
     Base class for all trading strategies.
     """
     def __init__(self):
-        self.position = 0
-
-    @abstractmethod
-    def buy_condition(self):
-        """Determine if the strategy's buy condition is met."""
-        pass
-
-    @abstractmethod
-    def sell_condition(self):
-        pass
-
-    def buy_stock(self):
-        self.position += 1
-        print(f"{self.name} bought a stock. Current position: {self.position}")
-
-    def sell_stock(self):
-        self.postition = 0
-
-    def sell_stock(self):
-        if self.position > 0:
-            self.position -= 1
-            print(f"{self.name} sold a stock. Current position: {self.position}")
-        else:
-            print(f"{self.name} cannot sell stock. No position to sell.")
+        self.trades = pd.DataFrame(columns=["order_day", "cover_day", 
+                                            "order_price", "cover_price"])
+        self.order_day = None
+        self.order_price = None
     
-    def position_mapping(self):
-        if self.position > 0:
-            return "Buy"
-        
-        else:
-            return "Sell"
+    def place_order(self, day, price):
+        """
+        Place an order to buy a stock.
 
-    def __call__(self):
-        if self.buy_condition():
-            self.buy_stock()
+        Args:
+            day (str): The day of the order.
+            price (float): The price of the stock at the time of order.
+        """
+        self.order_day = day
+        self.order_price = price
 
-        elif self.sell_condition():
-            self.sell_stock()
-            
-        else:
-            print(f"Current position: {self.position}")
+    def cover_order(self):
+        self.order_day = None
+        self.order_price = None
+
+    @abstractmethod
+    def __call__(self, price_df):
+        pass

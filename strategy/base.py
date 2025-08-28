@@ -50,3 +50,18 @@ class MAExceedStrategy(BaseStrategy):
 
             n_time = data.index[i+1]
             n_open = data.loc[n_time, 'open']
+
+            if self.order_day is None and c_high > c_ema * 1.01:
+                self.order_day = n_time
+                self.order_price = n_open
+            
+            elif self.order_day is not None and c_low < c_ema * 0.99:
+                self.trades = self.trades.append({
+                    "order_day": self.order_day,
+                    "cover_day": n_time,
+                    "order_price": self.order_price,
+                    "cover_price": n_open
+                }, ignore_index=True)
+                self.cover_order()
+        return self.trades
+

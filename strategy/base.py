@@ -56,12 +56,13 @@ class MAExceedStrategy(BaseStrategy):
                 self.order_price = n_open
             
             elif self.order_day is not None and c_low < c_ema * 0.99:
-                self.trades = self.trades.append({
+                new_trade = pd.DataFrame([{
                     "order_day": self.order_day,
                     "cover_day": n_time,
                     "order_price": self.order_price,
                     "cover_price": n_open
-                }, ignore_index=True)
+                }])
+                self.trades = pd.concat([self.trades, new_trade], ignore_index=True)
                 self.cover_order()
         return self.trades
 

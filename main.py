@@ -1,6 +1,7 @@
 from routers import MyTWSESQLRouter
 from strategy import MAExceedStrategy
 from indicator import StockIndicator
+from utils import ChartTrade
 
 HOST = "localhost:3306"
 USER = "root"
@@ -18,4 +19,4 @@ calculator = MAExceedStrategy()
 trade = calculator(data)
 indicator = StockIndicator(trade, start_date, end_date, stock_type='Stock')
 summary = indicator.summary()
-print(summary)
+ChartTrade(data, trade)

@@ -4,7 +4,6 @@ import mplfinance as mpf
 def ChartTrade(data,trade=pd.DataFrame(),addp=[],v_enable=True):
     addp=addp.copy()
     data1=data.copy()
-    breakpoint()
     # 如果有交易紀錄，則把交易紀錄與K線彙整
     if trade.shape[0] > 0:
         # 將物件複製出來，不影響原本的交易明細變數

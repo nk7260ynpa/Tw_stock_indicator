@@ -1,9 +1,11 @@
 import pandas as pd
 import mplfinance as mpf
 
-def ChartTrade(data,trade=pd.DataFrame(),addp=[],v_enable=True):
-    addp=addp.copy()
+def ChartTrade(data, trade=pd.DataFrame(), v_enable=True):
     data1=data.copy()
+    data1["EMA"]=data["EMA"]
+    addp = []
+    addp.append(mpf.make_addplot(data1['EMA']))
     # 如果有交易紀錄，則把交易紀錄與K線彙整
     if trade.shape[0] > 0:
         # 將物件複製出來，不影響原本的交易明細變數

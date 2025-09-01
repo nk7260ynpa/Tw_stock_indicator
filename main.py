@@ -21,6 +21,5 @@ trade = calculator(data)
 indicator = StockIndicator(trade, start_date, end_date, stock_type='Stock')
 summary = indicator.summary()
 
-addp = []
-addp.append(mpf.make_addplot(data['EMA']))
-ChartTrade(data, trade, addp=addp, v_enable=True)
+
+ChartTrade(data, trade, v_enable=True)

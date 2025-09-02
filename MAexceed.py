@@ -21,7 +21,7 @@ def main(opt):
     calculator = MAExceedStrategy()
     trade = calculator(data)
     indicator = StockIndicator(trade, start_date, end_date, stock_type='Stock')
-    summary = indicator.summary()
+    indicator.show()
     ChartTrade(data, trade, v_enable=True)
 
 if __name__ == "__main__":

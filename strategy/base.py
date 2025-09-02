@@ -51,11 +51,11 @@ class MAExceedStrategy(BaseStrategy):
             n_time = data.index[i+1]
             n_open = data.loc[n_time, 'open']
 
-            if self.order_day is None and c_high > c_ema * 1.01:
+            if self.order_day is None and c_close > c_ema * 1.01:
                 self.order_day = n_time
                 self.order_price = n_open
             
-            elif self.order_day is not None and c_low < c_ema * 0.99:
+            elif self.order_day is not None and c_close < c_ema * 0.995:
                 new_trade = pd.DataFrame([{
                     "order_day": self.order_day,
                     "cover_day": n_time,

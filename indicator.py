@@ -17,6 +17,7 @@ class StockIndicator():
         self.end_date = end_date
         self.stock_type = self._validate_stock_type(stock_type)
         self.total_profit = self.cal_total_profit()
+        self.total_profit_rate = self.cal_total_profit_rate()
         self.total_trade_times = self.cal_total_trade_times()
         self.mean_profit = self.cal_mean_profit()
         self.mean_holding_days = self.cal_mean_holding_days()
@@ -47,7 +48,28 @@ class StockIndicator():
         if self.trade.empty:
             return 0.0
 
-        profit = np.sum(self.trade['cover_price'] - self.trade['order_price'])
+        profit = np.sum((self.trade['cover_price'] - self.trade['order_price']))
+        if self.stock_type == 'ETF':
+            profit *= 1 - (0.001 + 0.00285)
+        
+        elif self.stock_type == 'Stock':
+            profit *= 1 - (0.003 + 0.00285)
+
+        else:
+            raise ValueError("Invalid stock type. Must be either 'Stock' or 'ETF'.")
+        return profit
+    
+    def cal_total_profit_rate(self):
+        """
+        Calculate the profit from the trade data.
+
+        Returns:
+            float: The total profit rate from the trades.
+        """
+        if self.trade.empty:
+            return 0.0
+
+        profit = np.sum((self.trade['cover_price'] - self.trade['order_price']) / self.trade['order_price'])
         if self.stock_type == 'ETF':
             profit *= 1 - (0.001 + 0.00285)
         
@@ -250,4 +272,24 @@ class StockIndicator():
             "mean_earn_open_days": self.mean_earn_open_days,
             "mean_loss_open_days": self.mean_loss_open_days
         }
+    
+    def show(self):
+        """
+        Print all calculated indicators in a readable format.
+        """
+        summary = self.summary()
+
+        print("總績效: {:.2f} ".format(summary["total_profit"]))
+        print("總績效率: {:.2f} %".format(summary["total_profit_rate"]))
+        print("總交易次數: {}".format(summary["total_trade_times"]))
+        print("平均每次績效: {:.2f}".format(summary["mean_profit"]))
+        print("平均持有天數: {:.2f}".format(summary["mean_holding_days"]))
+        print("賺錢率: {:.2%}".format(summary["earn_rate"]))
+        print("賠錢率: {:.2%}".format(summary["loss_rate"]))
+        print("平均賺錢: {:.2f}".format(summary["mean_earn"]))
+        print("平均賠錢: {:.2f}".format(summary["mean_loss"]))
+        print("賺賠比: {:.2f}".format(summary["earn_loss_odds"]))
+        print("期望值: {:.2f}".format(summary["expect_profit"]))
+        print("平均賺錢持有天數: {:.2f}".format(summary["mean_earn_open_days"]))
+        print("平均賠錢持有天數: {:.2f}".format(summary["mean_loss_open_days"]))
     

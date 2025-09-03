@@ -260,6 +260,7 @@ class StockIndicator():
         """
         return {
             "total_profit": self.total_profit,
+            "total_profit_rate": self.total_profit_rate,
             "total_trade_times": self.total_trade_times,
             "mean_profit": self.mean_profit,
             "mean_holding_days": self.mean_holding_days,

@@ -4,6 +4,7 @@ from routers import MyTWSESQLRouter
 from strategy import MAExceedStrategy
 from indicator import StockIndicator
 from utils import ChartTrade
+import mplfinance as mpf
 
 def main(opt):
     HOST = opt.host
@@ -22,7 +23,8 @@ def main(opt):
     trade = calculator(data)
     indicator = StockIndicator(trade, start_date, end_date, stock_type='Stock')
     indicator.show()
-    ChartTrade(data, trade, v_enable=True)
+    addp = [mpf.make_addplot(data['EMA'])]
+    ChartTrade(data, trade, addp=addp, v_enable=True)
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()

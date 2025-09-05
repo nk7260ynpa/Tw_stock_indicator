@@ -1,10 +1,11 @@
 import argparse
 
+import mplfinance as mpf
+
 from routers import MyTWSESQLRouter
 from strategy import MAExceedStrategy
 from indicator import StockIndicator
 from utils import ChartTrade
-import mplfinance as mpf
 
 def main(opt):
     HOST = opt.host

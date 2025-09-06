@@ -65,4 +65,6 @@ class MAExceedStrategy(BaseStrategy):
                 self.trades = pd.concat([self.trades, new_trade], ignore_index=True)
                 self.cover_order()
         return self.trades
+    
+class HighStrategy(BaseStrategy):
 

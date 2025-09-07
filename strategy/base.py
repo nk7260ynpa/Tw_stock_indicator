@@ -67,4 +67,4 @@ class MAExceedStrategy(BaseStrategy):
         return self.trades
     
 class HighStrategy(BaseStrategy):
-
+    def __call__(self, data):

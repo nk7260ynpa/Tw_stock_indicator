@@ -1,1 +1,1 @@
-from .base import MAExceedStrategy
+from .MA import MAExceedStrategy

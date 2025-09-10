@@ -8,6 +8,17 @@ class MAExceedStrategy(BaseStrategy):
     Moving Average Exceed Strategy:
     Buy when the price exceeds the moving average by a certain threshold.
     Sell when the price drops below the moving average by a certain threshold.
+
+    Args:
+    def __init__(self):
+        super().__init__()
+        self.order_day = None
+        self.order_price = None
+        self.trades = pd.DataFrame(columns=["order_day", "cover_day", "order_price", "cover_price"])    
+
+    Returns:
+        pd.DataFrame: A DataFrame containing the trade records with columns:
+            'order_day', 'cover_day', 'order_price', 'cover_price'.
     """
     def __call__(self, data):
         data["EMA"] = EMA(data, timeperiod=5)

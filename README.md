@@ -5,3 +5,7 @@
 ```
 python MAexceed.py
 ```
+
+# Calculate MACD
+## 計算MACD黃金交叉與死亡交叉決定是否進出場
+```

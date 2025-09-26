@@ -14,7 +14,3 @@ python MACD.py
 
 
 
-
-
-
-

@@ -9,7 +9,5 @@ python MAexceed.py
 # Calculate MACD
 ## 計算MACD交叉決定是否進出場
 ```
-python MACD.py
+python MAexceedStopLoss.py
 ```
-
-

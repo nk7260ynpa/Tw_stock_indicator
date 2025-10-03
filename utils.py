@@ -33,4 +33,6 @@ def ChartTrade(data, trade=pd.DataFrame(), addp=[], v_enable=True):
     mpf.plot(data1,addplot=addp,style=mstyle,type='candle',
              volume=v_enable, savefig='Trade.png',
              tight_layout=True, figsize=(24, 8))
+
+
     

@@ -9,5 +9,5 @@ python MAexceed.py
 # Calculate MACD
 ## 計算MACD設置停損位置
 ```
-python MAexceedStopLoss.py
+python3 MAexceedStopLoss.py
 ```

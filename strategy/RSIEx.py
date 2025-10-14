@@ -22,6 +22,9 @@ class RSIExceedStrategy(BaseStrategy):
     """
     def __call__(self, data):
         data["RSI"] = RSI(data, timeperiod=5)
+        over_buy = 60
+        over_sell = 40
+        rsi_min, rsi_min_time = 100, 0
         for i in range(data.shape[0]-1):
             c_time = data.index[i]
             c_low = data.loc[c_time, 'low']
@@ -32,11 +35,19 @@ class RSIExceedStrategy(BaseStrategy):
             n_time = data.index[i+1]
             n_open = data.loc[n_time, 'open']
 
-            if self.order_day is None and c_rsi > 60:
-                self.order_day = n_time
-                self.order_price = n_open
-
-            elif self.order_day is not None and not c_rsi > 60:
+            if self.order_day is None:
+                if c_rsi < over_sell:
+                    if rsi_min > c_rsi:
+                        rsi_min = c_rsi
+                        rsi_min_time = i
+                        continue
+                if i <= rsi_min_time+3 and c_rsi > rsi_min+10:
+                    rsi_min = 100
+                    rsi_min_time = 0
+                    self.order_day = n_time
+                    self.order_price = n_open
+                    
+            elif self.order_day is not None and c_rsi > over_buy:
                 new_trade = pd.DataFrame([{
                     "order_day": self.order_day,
                     "cover_day": n_time,

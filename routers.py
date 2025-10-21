@@ -130,7 +130,7 @@ class MyTWSESQLRouter:
             self.db_name (str, optional): The name of the database. Defaults to None.
 
         Returns:
-            conn: The MySQL connection object.
+            conn: The MySQL connection object
         """
         conn = mysql_conn_db(self.host, self.user, self.password, self.db_name)
         return conn

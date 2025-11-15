@@ -11,3 +11,8 @@ python MAexceed.py
 ```
 python3 MAexceedStopLoss.py
 ```
+
+#. Caculate RSI
+```
+python3 RSI.py
+```

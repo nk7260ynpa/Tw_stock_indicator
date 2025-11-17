@@ -3,7 +3,7 @@ import argparse
 import mplfinance as mpf
 
 from routers import MyTWSESQLRouter
-from strategy import RSIExceedStrategy
+from strategy import RSIEBounceStrategy
 from indicator import StockIndicator
 from utils import ChartTrade
 
@@ -20,7 +20,7 @@ def main(opt):
 
     data = router.load_data(start_date, end_date, security_code)
 
-    calculator = RSIExceedStrategy()
+    calculator = RSIEBounceStrategy()
     trade = calculator(data)
     indicator = StockIndicator(trade, start_date, end_date, stock_type='Stock')
     indicator.show()

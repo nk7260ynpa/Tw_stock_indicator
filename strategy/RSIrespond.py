@@ -3,7 +3,7 @@ from talib.abstract import RSI
 
 from .base import BaseStrategy
 
-class RSIExceedStrategy(BaseStrategy):
+class RSIEBounceStrategy(BaseStrategy):
     """
     Relative Strength Index Exceed Strategy:
     Buy when the RSI exceeds 60.

@@ -22,3 +22,13 @@ python3 RSI.py
 ```
 python3 SMAexceedStopLoss.py
 ```
+
+# Calculate RSI Exceed
+```
+python3 RSIexceed.py
+```
+
+# Calculate RSI Bounce
+```
+python3 RSIbounce.py
+```

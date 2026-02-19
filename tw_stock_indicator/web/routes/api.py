@@ -9,7 +9,7 @@ from dataclasses import asdict
 from flask import Blueprint, jsonify, request
 
 from tw_stock_indicator.models.rules import IndicatorType, LogicOperator, Operator
-from tw_stock_indicator.services import rule_service, stock_service
+from tw_stock_indicator.services import backtest_service, rule_service, stock_service
 
 logger = logging.getLogger(__name__)
 
@@ -147,6 +147,43 @@ def get_stock_daily(market: str, code: str):
         return jsonify({"error": "資料庫查詢失敗"}), 500
 
     return jsonify(data)
+
+
+@api_bp.route("/backtest", methods=["POST"])
+def run_backtest():
+    """執行回測計算。"""
+    data = request.get_json()
+    if not data or "daily_data" not in data:
+        return jsonify({"error": "缺少 daily_data 欄位"}), 400
+
+    daily_data = data["daily_data"]
+    if not daily_data or len(daily_data) < 2:
+        return jsonify({"error": "日線資料不足（至少需要 2 筆）"}), 400
+
+    shares = data.get("shares", 1000)
+
+    rule_groups = rule_service.get_all_rule_groups()
+    if not rule_groups:
+        return jsonify({"error": "尚未設定進出場規則"}), 400
+
+    try:
+        indicators = backtest_service.run_backtest(daily_data, rule_groups, shares)
+    except Exception:
+        logger.exception("回測計算失敗")
+        return jsonify({"error": "回測計算失敗"}), 500
+
+    result = []
+    for ind in indicators:
+        result.append({
+            "code": ind.code,
+            "name": ind.name,
+            "value": ind.value,
+            "unit": ind.unit,
+            "description": ind.description,
+            "formatted_value": ind.formatted_value(),
+        })
+
+    return jsonify(result)
 
 
 @api_bp.route("/stocks/<market>/<code>/date-range")

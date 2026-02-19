@@ -17,6 +17,9 @@ tw_stock_indicator/              # 主程式套件
     services/                    # 業務邏輯
         __init__.py
         indicator_service.py     # 示範指標資料
+        indicator_calculator.py  # 技術指標計算（MA、RSI、MACD、KD、布林通道）
+        signal_evaluator.py      # 訊號評估（根據規則判斷進出場訊號）
+        backtest_service.py      # 回測服務（交易模擬 + 績效指標計算）
         rule_service.py          # 規則 CRUD（記憶體儲存）
         stock_service.py         # 股票資料查詢（MySQL）
     web/                         # Flask Web 層
@@ -24,7 +27,7 @@ tw_stock_indicator/              # 主程式套件
         routes/
             __init__.py
             dashboard.py         # 首頁路由（GET /）
-            api.py               # 規則 API + 股票資料 API（RESTful）
+            api.py               # 規則 API + 股票資料 API + 回測 API（RESTful）
         templates/               # Jinja2 模板
             base.html            # 深色主題基礎版型
             dashboard.html       # 儀表板頁面
@@ -43,7 +46,8 @@ tests/                           # 單元測試
     test_models.py               # 資料模型測試
     test_services.py             # 服務層測試
     test_stock_service.py        # 股票服務測試（mock DB）
-    test_web.py                  # Flask 路由與 API 測試
+    test_backtest.py             # 回測引擎測試（指標計算、訊號評估、回測服務）
+    test_web.py                  # Flask 路由與 API 測試（含回測 API）
 docker/                          # Docker 相關
     Dockerfile                   # Python 3.12 base image
     build.sh                     # 建立 image 腳本
@@ -85,8 +89,9 @@ HOST_PORT=8080 DB_HOST=myhost DB_USER=myuser DB_PASSWORD=mypass bash run.sh
 
 - **股票選擇器**：搜尋股票代碼或名稱（支援上市 TWSE / 上櫃 TPEX），選擇後自動帶入可查詢日期範圍
 - **日期區間選擇**：選定起始與結束日期後，載入該股票的日線資料
-- **績效指標卡片**：展示 8 項股市績效指標（勝率、獲利因子、期望值等）
 - **規則設計器**：可新增/刪除進出場規則群組與條件，支援多種技術指標（MA、RSI、MACD、KD、布林通道）
+- **回測計算**：根據設定的進出場規則與日線資料執行回測，計算 8 項績效指標（勝率、獲利因子、期望值、最大回撤、夏普比率、獲利虧損比、年化報酬率、總交易次數）
+- **績效指標卡片**：回測完成後顯示計算結果（預設隱藏，點擊「計算」後顯示）
 
 ### API 端點
 
@@ -100,6 +105,7 @@ HOST_PORT=8080 DB_HOST=myhost DB_USER=myuser DB_PASSWORD=mypass bash run.sh
 | GET | `/api/stocks/search?q=<keyword>` | 搜尋股票（代碼或名稱） |
 | GET | `/api/stocks/<market>/<code>/daily?start=<date>&end=<date>` | 取得日線資料 |
 | GET | `/api/stocks/<market>/<code>/date-range` | 取得可查詢日期範圍 |
+| POST | `/api/backtest` | 執行回測計算（需傳入 daily_data 與 shares） |
 
 ### 執行單元測試
 

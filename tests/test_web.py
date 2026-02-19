@@ -27,13 +27,12 @@ class TestDashboard(TestWebBase):
         resp = self.client.get("/")
         self.assertEqual(resp.status_code, 200)
 
-    def test_index_contains_indicators(self):
-        """確認首頁包含指標資訊。"""
+    def test_index_indicator_hidden(self):
+        """確認績效指標區塊預設隱藏。"""
         resp = self.client.get("/")
         html = resp.data.decode("utf-8")
-        self.assertIn("勝率", html)
-        self.assertIn("獲利因子", html)
-        self.assertIn("62.5%", html)
+        self.assertIn('id="indicator-section"', html)
+        self.assertIn('style="display:none;"', html)
 
     def test_index_contains_rule_designer(self):
         """確認首頁包含規則設計器。"""
@@ -226,6 +225,75 @@ class TestStockDateRangeAPI(TestWebBase):
     def test_get_date_range_invalid_market(self):
         """確認不支援的市場回傳 400。"""
         resp = self.client.get("/api/stocks/INVALID/2330/date-range")
+        self.assertEqual(resp.status_code, 400)
+
+
+class TestBacktestAPI(TestWebBase):
+    """回測 API 測試。"""
+
+    def test_backtest_success(self):
+        """確認回測正確回傳指標。"""
+        daily_data = [
+            {"date": f"2024-01-{i+1:02d}", "open": 100.0 + i,
+             "high": 102.0 + i, "low": 99.0 + i, "close": 101.0 + i,
+             "volume": 1000}
+            for i in range(30)
+        ]
+
+        resp = self.client.post(
+            "/api/backtest",
+            data=json.dumps({"daily_data": daily_data, "shares": 1000}),
+            content_type="application/json",
+        )
+        self.assertEqual(resp.status_code, 200)
+        data = json.loads(resp.data)
+        self.assertIsInstance(data, list)
+        self.assertEqual(len(data), 8)
+
+        codes = [d["code"] for d in data]
+        self.assertIn("win_rate", codes)
+        self.assertIn("total_trades", codes)
+
+    def test_backtest_missing_data(self):
+        """確認缺少 daily_data 回傳 400。"""
+        resp = self.client.post(
+            "/api/backtest",
+            data=json.dumps({"shares": 1000}),
+            content_type="application/json",
+        )
+        self.assertEqual(resp.status_code, 400)
+
+    def test_backtest_insufficient_data(self):
+        """確認日線資料不足回傳 400。"""
+        resp = self.client.post(
+            "/api/backtest",
+            data=json.dumps({
+                "daily_data": [
+                    {"date": "2024-01-01", "open": 100, "high": 101,
+                     "low": 99, "close": 100, "volume": 1000}
+                ],
+                "shares": 1000,
+            }),
+            content_type="application/json",
+        )
+        self.assertEqual(resp.status_code, 400)
+
+    def test_backtest_no_rules(self):
+        """確認無規則時回傳 400。"""
+        rule_service.reset_store()
+
+        daily_data = [
+            {"date": f"2024-01-{i+1:02d}", "open": 100.0 + i,
+             "high": 102.0 + i, "low": 99.0 + i, "close": 101.0 + i,
+             "volume": 1000}
+            for i in range(10)
+        ]
+
+        resp = self.client.post(
+            "/api/backtest",
+            data=json.dumps({"daily_data": daily_data, "shares": 1000}),
+            content_type="application/json",
+        )
         self.assertEqual(resp.status_code, 400)
 
 

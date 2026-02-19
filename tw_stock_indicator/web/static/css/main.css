@@ -482,3 +482,26 @@ body {
     color: var(--red);
     background: rgba(248, 81, 73, 0.15);
 }
+
+/* 回測相關樣式 */
+.backtest-meta {
+    font-size: 0.75rem;
+    font-weight: 400;
+    color: var(--text-secondary);
+    margin-left: 12px;
+}
+
+#indicator-section.fade-in {
+    animation: fadeIn 0.4s ease-in;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(8px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.btn-calculating {
+    opacity: 0.7;
+    cursor: wait;
+    pointer-events: none;
+}

@@ -1,7 +1,7 @@
 /**
  * 股票選擇與日期區間互動邏輯。
  *
- * 提供股票搜尋、選擇、日期範圍設定、資料載入等功能。
+ * 提供股票搜尋、選擇、日期範圍設定、資料載入、回測計算等功能。
  */
 
 (function () {
@@ -164,7 +164,7 @@
             });
     }
 
-    /** 查詢按鈕點擊 */
+    /** 計算按鈕點擊：載入日線 → 呼叫回測 API → 更新指標 */
     queryBtn.addEventListener('click', function () {
         if (!currentStock) return;
 
@@ -177,7 +177,9 @@
 
         window.currentShares = parseInt(sharesInput.value, 10) || 1000;
         queryBtn.disabled = true;
-        showLoadStatus('載入中...', 'info');
+        queryBtn.classList.add('btn-calculating');
+        queryBtn.textContent = '計算中...';
+        showLoadStatus('載入日線資料中...', 'info');
 
         var url = '/api/stocks/' + currentStock.market + '/'
             + currentStock.code + '/daily?start=' + start + '&end=' + end;
@@ -187,24 +189,115 @@
             .then(function (data) {
                 if (data.error) {
                     showLoadStatus(data.error, 'error');
-                    queryBtn.disabled = false;
+                    resetBtn();
                     return;
                 }
 
                 window.currentStockData = data;
                 showLoadStatus(
-                    '已載入 ' + data.length + ' 筆日線資料'
-                    + '（' + currentStock.code + ' ' + currentStock.name
-                    + '，' + start + ' ~ ' + end + '）',
+                    '已載入 ' + data.length + ' 筆日線資料，正在執行回測...',
+                    'info'
+                );
+
+                // 呼叫回測 API
+                return runBacktest(data, window.currentShares);
+            })
+            .then(function (result) {
+                if (!result) return;
+
+                // 更新指標卡片
+                updateIndicatorCards(result);
+
+                // 顯示績效指標區塊
+                showIndicatorSection();
+
+                showLoadStatus(
+                    '回測完成（' + currentStock.code + ' ' + currentStock.name
+                    + '，' + start + ' ~ ' + end
+                    + '，' + window.currentShares + ' 股）',
                     'success'
                 );
-                queryBtn.disabled = false;
+                resetBtn();
             })
             .catch(function () {
-                showLoadStatus('載入股價資料失敗', 'error');
-                queryBtn.disabled = false;
+                showLoadStatus('回測計算失敗', 'error');
+                resetBtn();
             });
     });
+
+    /** 呼叫回測 API */
+    function runBacktest(dailyData, shares) {
+        return fetch('/api/backtest', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                daily_data: dailyData,
+                shares: shares
+            })
+        })
+        .then(function (res) { return res.json(); })
+        .then(function (data) {
+            if (data.error) {
+                showLoadStatus(data.error, 'error');
+                resetBtn();
+                return null;
+            }
+            return data;
+        });
+    }
+
+    /** 更新指標卡片 DOM */
+    function updateIndicatorCards(indicators) {
+        var grid = document.getElementById('indicator-grid');
+        if (!grid) return;
+
+        // 清空現有卡片並重建
+        var html = '';
+        indicators.forEach(function (ind) {
+            var valueClass = 'indicator-value';
+            if (ind.value < 0) {
+                valueClass += ' negative';
+            } else {
+                valueClass += ' positive';
+            }
+
+            html += '<div class="indicator-card" data-code="' + ind.code + '">'
+                + '<div class="indicator-name">' + ind.name + '</div>'
+                + '<div class="' + valueClass + '">' + ind.formatted_value + '</div>'
+                + '<div class="indicator-desc">' + ind.description + '</div>'
+                + '</div>';
+        });
+        grid.innerHTML = html;
+    }
+
+    /** 顯示績效指標區塊 + 動畫 + 滾動 */
+    function showIndicatorSection() {
+        var section = document.getElementById('indicator-section');
+        if (!section) return;
+
+        section.style.display = '';
+        section.classList.remove('fade-in');
+        // 觸發 reflow 以重新播放動畫
+        void section.offsetWidth;
+        section.classList.add('fade-in');
+
+        // 更新回測資訊
+        var meta = document.getElementById('backtest-meta');
+        if (meta && currentStock) {
+            meta.textContent = '（' + currentStock.code + ' '
+                + currentStock.name + '，' + window.currentShares + ' 股）';
+        }
+
+        // 自動滾動到績效指標區塊
+        section.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+
+    /** 重設按鈕狀態 */
+    function resetBtn() {
+        queryBtn.disabled = false;
+        queryBtn.classList.remove('btn-calculating');
+        queryBtn.textContent = '計算';
+    }
 
     /** 顯示載入狀態 */
     function showLoadStatus(msg, type) {

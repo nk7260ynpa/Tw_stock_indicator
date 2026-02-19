@@ -7,17 +7,19 @@
 </section>
 
 <section class="section">
-    <h2 class="section-title">績效指標</h2>
-    <div class="indicator-grid">
+    <h2 class="section-title">進出場規則設計器</h2>
+    {% include "components/rule_designer.html" %}
+</section>
+
+<section id="indicator-section" class="section" style="display:none;">
+    <h2 class="section-title">績效指標
+        <span id="backtest-meta" class="backtest-meta"></span>
+    </h2>
+    <div id="indicator-grid" class="indicator-grid">
         {% for ind in indicators %}
             {% include "components/indicator_card.html" %}
         {% endfor %}
     </div>
-</section>
-
-<section class="section">
-    <h2 class="section-title">進出場規則設計器</h2>
-    {% include "components/rule_designer.html" %}
 </section>
 {% endblock %}
 

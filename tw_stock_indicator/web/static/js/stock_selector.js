@@ -9,7 +9,6 @@
 
     var searchInput = document.getElementById('stock-search-input');
     var dropdown = document.getElementById('search-dropdown');
-    var selectedStockEl = document.getElementById('selected-stock');
     var dateStart = document.getElementById('date-start');
     var dateEnd = document.getElementById('date-end');
     var queryBtn = document.getElementById('btn-query-stock');
@@ -21,6 +20,11 @@
     /** 將已選股票資訊存在全域 */
     window.currentStockData = null;
     window.currentStock = null;
+
+    /** 點擊搜尋欄位時清空以便重新搜尋 */
+    searchInput.addEventListener('focus', function () {
+        searchInput.select();
+    });
 
     /** Debounce 搜尋 */
     searchInput.addEventListener('input', function () {
@@ -110,14 +114,8 @@
         currentStock = { code: code, name: name, market: market };
         window.currentStock = currentStock;
 
-        // 更新顯示
-        selectedStockEl.innerHTML =
-            '<span class="stock-badge">'
-            + '<span class="badge-market">' + market + '</span>'
-            + code + ' ' + name
-            + '</span>';
-
-        searchInput.value = '';
+        // 將選中的股票顯示在搜尋欄位
+        searchInput.value = code + ' ' + name + ' (' + market + ')';
         hideDropdown();
 
         // 取得日期範圍

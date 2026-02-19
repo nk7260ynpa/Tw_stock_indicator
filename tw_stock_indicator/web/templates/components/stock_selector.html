@@ -1,21 +1,13 @@
 <!-- 股票選擇與日期區間元件 -->
 <div class="stock-selector">
     <div class="stock-selector-row">
-        <!-- 股票搜尋 -->
+        <!-- 股票搜尋 / 已選股票 -->
         <div class="search-group">
-            <label class="selector-label">股票搜尋</label>
+            <label class="selector-label">股票</label>
             <div class="search-wrapper">
                 <input type="text" id="stock-search-input" class="search-input"
                        placeholder="輸入代碼或名稱，例如 2330 或 台積電" autocomplete="off">
                 <div id="search-dropdown" class="search-dropdown"></div>
-            </div>
-        </div>
-
-        <!-- 已選股票 -->
-        <div class="selected-stock-group">
-            <label class="selector-label">已選股票</label>
-            <div id="selected-stock" class="selected-stock">
-                <span class="stock-placeholder">尚未選擇</span>
             </div>
         </div>
 
@@ -29,9 +21,9 @@
             </div>
         </div>
 
-        <!-- 查詢按鈕 -->
+        <!-- 計算按鈕 -->
         <div class="query-action">
-            <button id="btn-query-stock" class="btn btn-primary" disabled>查詢</button>
+            <button id="btn-query-stock" class="btn btn-primary" disabled>計算</button>
         </div>
     </div>
 

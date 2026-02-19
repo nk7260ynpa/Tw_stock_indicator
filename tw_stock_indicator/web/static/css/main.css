@@ -217,38 +217,6 @@ body {
     font-size: 0.875rem;
 }
 
-.selected-stock-group {
-    min-width: 140px;
-}
-
-.selected-stock {
-    padding: 8px 0;
-    font-size: 0.875rem;
-}
-
-.stock-placeholder {
-    color: var(--text-secondary);
-}
-
-.stock-badge {
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-    background: var(--bg-input);
-    border: 1px solid var(--border);
-    border-radius: 4px;
-    padding: 4px 10px;
-    font-size: 0.875rem;
-}
-
-.badge-market {
-    font-size: 0.6875rem;
-    font-weight: 600;
-    color: var(--blue);
-    background: rgba(88, 166, 255, 0.15);
-    padding: 1px 5px;
-    border-radius: 3px;
-}
 
 .date-range {
     min-width: 240px;

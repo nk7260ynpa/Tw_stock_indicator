@@ -217,6 +217,25 @@ body {
     font-size: 0.875rem;
 }
 
+.shares-group {
+    min-width: 100px;
+    max-width: 120px;
+}
+
+.shares-input {
+    width: 100%;
+    background: var(--bg-input);
+    color: var(--text-primary);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    padding: 8px 12px;
+    font-size: 0.875rem;
+}
+
+.shares-input:focus {
+    outline: none;
+    border-color: var(--blue);
+}
 
 .date-range {
     min-width: 240px;

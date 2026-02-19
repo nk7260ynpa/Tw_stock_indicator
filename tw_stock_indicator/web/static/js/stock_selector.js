@@ -11,6 +11,7 @@
     var dropdown = document.getElementById('search-dropdown');
     var dateStart = document.getElementById('date-start');
     var dateEnd = document.getElementById('date-end');
+    var sharesInput = document.getElementById('stock-shares');
     var queryBtn = document.getElementById('btn-query-stock');
     var loadStatus = document.getElementById('stock-load-status');
 
@@ -20,6 +21,7 @@
     /** 將已選股票資訊存在全域 */
     window.currentStockData = null;
     window.currentStock = null;
+    window.currentShares = 1000;
 
     /** 點擊搜尋欄位時清空以便重新搜尋 */
     searchInput.addEventListener('focus', function () {
@@ -173,6 +175,7 @@
             return;
         }
 
+        window.currentShares = parseInt(sharesInput.value, 10) || 1000;
         queryBtn.disabled = true;
         showLoadStatus('載入中...', 'info');
 

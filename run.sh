@@ -1,19 +1,16 @@
 #!/usr/bin/env bash
 #
-# 啟動 Docker container 執行 Web 儀表板，並掛載 logs 資料夾。
+# 透過 docker compose 啟動 Web 儀表板，連接 MySQL 資料庫。
 
 set -euo pipefail
 
 readonly SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-readonly IMAGE_NAME="tw-stock-indicator"
 readonly LOGS_DIR="${SCRIPT_DIR}/logs"
+readonly COMPOSE_FILE="${SCRIPT_DIR}/docker/docker-compose.yaml"
 
 # 確保 logs 目錄存在
 mkdir -p "${LOGS_DIR}"
 
-echo "=== 啟動 ${IMAGE_NAME} ==="
-docker run --rm \
-  -p "${HOST_PORT:-5001}:5001" \
-  -v "${LOGS_DIR}:/app/logs" \
-  "${IMAGE_NAME}"
+echo "=== 啟動 Web 儀表板 ==="
+docker compose -f "${COMPOSE_FILE}" up
 echo "=== 執行完畢 ==="

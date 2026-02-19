@@ -1,0 +1,40 @@
+<!-- 股票選擇與日期區間元件 -->
+<div class="stock-selector">
+    <div class="stock-selector-row">
+        <!-- 股票搜尋 -->
+        <div class="search-group">
+            <label class="selector-label">股票搜尋</label>
+            <div class="search-wrapper">
+                <input type="text" id="stock-search-input" class="search-input"
+                       placeholder="輸入代碼或名稱，例如 2330 或 台積電" autocomplete="off">
+                <div id="search-dropdown" class="search-dropdown"></div>
+            </div>
+        </div>
+
+        <!-- 已選股票 -->
+        <div class="selected-stock-group">
+            <label class="selector-label">已選股票</label>
+            <div id="selected-stock" class="selected-stock">
+                <span class="stock-placeholder">尚未選擇</span>
+            </div>
+        </div>
+
+        <!-- 日期區間 -->
+        <div class="date-range">
+            <label class="selector-label">判斷區間</label>
+            <div class="date-inputs">
+                <input type="date" id="date-start" class="date-input" disabled>
+                <span class="date-separator">~</span>
+                <input type="date" id="date-end" class="date-input" disabled>
+            </div>
+        </div>
+
+        <!-- 查詢按鈕 -->
+        <div class="query-action">
+            <button id="btn-query-stock" class="btn btn-primary" disabled>查詢</button>
+        </div>
+    </div>
+
+    <!-- 載入狀態 -->
+    <div id="stock-load-status" class="stock-load-status"></div>
+</div>

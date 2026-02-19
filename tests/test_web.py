@@ -2,6 +2,7 @@
 
 import json
 import unittest
+from unittest.mock import patch
 
 from tw_stock_indicator.services import rule_service
 from tw_stock_indicator.web import create_app
@@ -39,6 +40,13 @@ class TestDashboard(TestWebBase):
         resp = self.client.get("/")
         html = resp.data.decode("utf-8")
         self.assertIn("rule-designer", html)
+
+    def test_index_contains_stock_selector(self):
+        """確認首頁包含股票選擇器。"""
+        resp = self.client.get("/")
+        html = resp.data.decode("utf-8")
+        self.assertIn("stock-selector", html)
+        self.assertIn("stock-search-input", html)
 
 
 class TestIndicatorAPI(TestWebBase):
@@ -132,6 +140,93 @@ class TestRuleAPI(TestWebBase):
             content_type="application/json",
         )
         self.assertEqual(resp.status_code, 404)
+
+
+class TestStockSearchAPI(TestWebBase):
+    """股票搜尋 API 測試。"""
+
+    @patch("tw_stock_indicator.web.routes.api.stock_service")
+    def test_search_stocks(self, mock_service):
+        """確認搜尋回傳正確格式。"""
+        mock_service.search_stocks.return_value = [
+            {"code": "2330", "name": "台積電", "market": "TWSE"},
+        ]
+
+        resp = self.client.get("/api/stocks/search?q=2330")
+        self.assertEqual(resp.status_code, 200)
+        data = json.loads(resp.data)
+        self.assertEqual(len(data), 1)
+        self.assertEqual(data[0]["code"], "2330")
+
+    def test_search_empty_keyword(self):
+        """確認空關鍵字回傳空列表。"""
+        resp = self.client.get("/api/stocks/search?q=")
+        self.assertEqual(resp.status_code, 200)
+        data = json.loads(resp.data)
+        self.assertEqual(data, [])
+
+    @patch("tw_stock_indicator.web.routes.api.stock_service")
+    def test_search_db_error(self, mock_service):
+        """確認資料庫錯誤回傳 500。"""
+        mock_service.search_stocks.side_effect = Exception("DB error")
+
+        resp = self.client.get("/api/stocks/search?q=test")
+        self.assertEqual(resp.status_code, 500)
+
+
+class TestStockDailyAPI(TestWebBase):
+    """股價日線 API 測試。"""
+
+    @patch("tw_stock_indicator.web.routes.api.stock_service")
+    def test_get_daily(self, mock_service):
+        """確認取得日線資料。"""
+        mock_service.get_stock_daily.return_value = [
+            {"date": "2024-01-02", "open": 595.0, "high": 600.0,
+             "low": 590.0, "close": 598.0, "volume": 25000},
+        ]
+
+        resp = self.client.get(
+            "/api/stocks/TWSE/2330/daily?start=2024-01-01&end=2024-01-31"
+        )
+        self.assertEqual(resp.status_code, 200)
+        data = json.loads(resp.data)
+        self.assertEqual(len(data), 1)
+        self.assertEqual(data[0]["close"], 598.0)
+
+    def test_get_daily_invalid_market(self):
+        """確認不支援的市場回傳 400。"""
+        resp = self.client.get(
+            "/api/stocks/INVALID/2330/daily?start=2024-01-01&end=2024-01-31"
+        )
+        self.assertEqual(resp.status_code, 400)
+
+    def test_get_daily_missing_dates(self):
+        """確認缺少日期參數回傳 400。"""
+        resp = self.client.get("/api/stocks/TWSE/2330/daily")
+        self.assertEqual(resp.status_code, 400)
+
+
+class TestStockDateRangeAPI(TestWebBase):
+    """股票日期範圍 API 測試。"""
+
+    @patch("tw_stock_indicator.web.routes.api.stock_service")
+    def test_get_date_range(self, mock_service):
+        """確認取得日期範圍。"""
+        mock_service.get_date_range.return_value = {
+            "min_date": "2020-01-02",
+            "max_date": "2024-12-31",
+        }
+
+        resp = self.client.get("/api/stocks/TWSE/2330/date-range")
+        self.assertEqual(resp.status_code, 200)
+        data = json.loads(resp.data)
+        self.assertEqual(data["min_date"], "2020-01-02")
+        self.assertEqual(data["max_date"], "2024-12-31")
+
+    def test_get_date_range_invalid_market(self):
+        """確認不支援的市場回傳 400。"""
+        resp = self.client.get("/api/stocks/INVALID/2330/date-range")
+        self.assertEqual(resp.status_code, 400)
 
 
 if __name__ == "__main__":

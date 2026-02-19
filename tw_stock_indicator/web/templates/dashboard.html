@@ -2,6 +2,11 @@
 
 {% block content %}
 <section class="section">
+    <h2 class="section-title">股票選擇</h2>
+    {% include "components/stock_selector.html" %}
+</section>
+
+<section class="section">
     <h2 class="section-title">績效指標</h2>
     <div class="indicator-grid">
         {% for ind in indicators %}
@@ -22,5 +27,6 @@
     window.OPERATORS = {{ operators | tojson }};
 </script>
 <script src="{{ url_for('static', filename='js/dashboard.js') }}"></script>
+<script src="{{ url_for('static', filename='js/stock_selector.js') }}"></script>
 <script src="{{ url_for('static', filename='js/rule_designer.js') }}"></script>
 {% endblock %}

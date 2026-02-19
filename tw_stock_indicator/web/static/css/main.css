@@ -113,6 +113,205 @@ body {
     color: var(--text-secondary);
 }
 
+/* 股票選擇器 */
+.stock-selector {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 20px;
+}
+
+.stock-selector-row {
+    display: flex;
+    gap: 16px;
+    align-items: flex-end;
+    flex-wrap: wrap;
+}
+
+.selector-label {
+    display: block;
+    font-size: 0.75rem;
+    color: var(--text-secondary);
+    margin-bottom: 6px;
+}
+
+.search-group {
+    flex: 1;
+    min-width: 200px;
+}
+
+.search-wrapper {
+    position: relative;
+}
+
+.search-input {
+    width: 100%;
+    background: var(--bg-input);
+    color: var(--text-primary);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    padding: 8px 12px;
+    font-size: 0.875rem;
+}
+
+.search-input::placeholder {
+    color: var(--text-secondary);
+}
+
+.search-input:focus {
+    outline: none;
+    border-color: var(--blue);
+}
+
+.search-dropdown {
+    display: none;
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-top: none;
+    border-radius: 0 0 4px 4px;
+    max-height: 240px;
+    overflow-y: auto;
+    z-index: 100;
+}
+
+.search-dropdown.show {
+    display: block;
+}
+
+.dropdown-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 12px;
+    cursor: pointer;
+    font-size: 0.875rem;
+    transition: background 0.15s;
+}
+
+.dropdown-item:hover {
+    background: var(--bg-input);
+}
+
+.dropdown-code {
+    font-weight: 600;
+    min-width: 50px;
+}
+
+.dropdown-name {
+    flex: 1;
+}
+
+.dropdown-market {
+    font-size: 0.75rem;
+    color: var(--text-secondary);
+}
+
+.dropdown-empty {
+    padding: 12px;
+    text-align: center;
+    color: var(--text-secondary);
+    font-size: 0.875rem;
+}
+
+.selected-stock-group {
+    min-width: 140px;
+}
+
+.selected-stock {
+    padding: 8px 0;
+    font-size: 0.875rem;
+}
+
+.stock-placeholder {
+    color: var(--text-secondary);
+}
+
+.stock-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: var(--bg-input);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    padding: 4px 10px;
+    font-size: 0.875rem;
+}
+
+.badge-market {
+    font-size: 0.6875rem;
+    font-weight: 600;
+    color: var(--blue);
+    background: rgba(88, 166, 255, 0.15);
+    padding: 1px 5px;
+    border-radius: 3px;
+}
+
+.date-range {
+    min-width: 240px;
+}
+
+.date-inputs {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.date-input {
+    background: var(--bg-input);
+    color: var(--text-primary);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    padding: 7px 8px;
+    font-size: 0.8125rem;
+}
+
+.date-input:focus {
+    outline: none;
+    border-color: var(--blue);
+}
+
+.date-input:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.date-separator {
+    color: var(--text-secondary);
+}
+
+.query-action {
+    padding-bottom: 1px;
+}
+
+.stock-load-status {
+    margin-top: 12px;
+    font-size: 0.8125rem;
+    min-height: 1.2em;
+}
+
+.stock-load-status.status-info {
+    color: var(--blue);
+}
+
+.stock-load-status.status-success {
+    color: var(--green);
+}
+
+.stock-load-status.status-error {
+    color: var(--red);
+}
+
+@media (max-width: 700px) {
+    .stock-selector-row {
+        flex-direction: column;
+        align-items: stretch;
+    }
+}
+
 /* 規則設計器 */
 .rule-designer {
     background: var(--bg-card);

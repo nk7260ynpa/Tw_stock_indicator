@@ -1,0 +1,18 @@
+services:
+  web:
+    image: tw-stock-indicator
+    ports:
+      - "${HOST_PORT:-5001}:5001"
+    volumes:
+      - ../logs:/app/logs
+    environment:
+      - DB_HOST=${DB_HOST:-tw_stock_database}
+      - DB_USER=${DB_USER:-root}
+      - DB_PASSWORD=${DB_PASSWORD:-stock}
+      - DB_PORT=${DB_PORT:-3306}
+    networks:
+      - db_network
+
+networks:
+  db_network:
+    external: true

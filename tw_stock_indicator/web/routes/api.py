@@ -1,14 +1,17 @@
 """API 路由。
 
-提供規則 CRUD 與指標參數查詢的 RESTful API。
+提供規則 CRUD、指標參數查詢與股票資料查詢的 RESTful API。
 """
 
+import logging
 from dataclasses import asdict
 
 from flask import Blueprint, jsonify, request
 
 from tw_stock_indicator.models.rules import IndicatorType, LogicOperator, Operator
-from tw_stock_indicator.services import rule_service
+from tw_stock_indicator.services import rule_service, stock_service
+
+logger = logging.getLogger(__name__)
 
 api_bp = Blueprint("api", __name__, url_prefix="/api")
 
@@ -104,3 +107,59 @@ def delete_condition(group_id: str, condition_id: str):
     if not success:
         return jsonify({"error": "規則群組或條件不存在"}), 404
     return jsonify({"message": "條件已刪除"})
+
+
+# --- 股票資料 API ---
+
+
+@api_bp.route("/stocks/search")
+def search_stocks():
+    """搜尋股票代碼或名稱。"""
+    keyword = request.args.get("q", "").strip()
+    if not keyword:
+        return jsonify([])
+
+    try:
+        results = stock_service.search_stocks(keyword)
+    except Exception:
+        logger.exception("股票搜尋失敗")
+        return jsonify({"error": "資料庫查詢失敗"}), 500
+
+    return jsonify(results)
+
+
+@api_bp.route("/stocks/<market>/<code>/daily")
+def get_stock_daily(market: str, code: str):
+    """取得指定股票的日線資料。"""
+    market = market.upper()
+    if market not in ("TWSE", "TPEX"):
+        return jsonify({"error": "market 必須為 TWSE 或 TPEX"}), 400
+
+    start = request.args.get("start", "")
+    end = request.args.get("end", "")
+    if not start or not end:
+        return jsonify({"error": "需要 start 和 end 參數"}), 400
+
+    try:
+        data = stock_service.get_stock_daily(market, code, start, end)
+    except Exception:
+        logger.exception("股價查詢失敗")
+        return jsonify({"error": "資料庫查詢失敗"}), 500
+
+    return jsonify(data)
+
+
+@api_bp.route("/stocks/<market>/<code>/date-range")
+def get_stock_date_range(market: str, code: str):
+    """取得指定股票可查詢的日期範圍。"""
+    market = market.upper()
+    if market not in ("TWSE", "TPEX"):
+        return jsonify({"error": "market 必須為 TWSE 或 TPEX"}), 400
+
+    try:
+        result = stock_service.get_date_range(market, code)
+    except Exception:
+        logger.exception("日期範圍查詢失敗")
+        return jsonify({"error": "資料庫查詢失敗"}), 500
+
+    return jsonify(result)

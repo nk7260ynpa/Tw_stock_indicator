@@ -1,0 +1,60 @@
+<div class="rule-designer">
+    <!-- 新增規則群組 -->
+    <div class="rule-actions">
+        <button class="btn btn-primary" id="btn-add-entry-rule">+ 進場規則</button>
+        <button class="btn btn-danger" id="btn-add-exit-rule">+ 出場規則</button>
+    </div>
+
+    <!-- 規則群組列表 -->
+    <div id="rule-groups-container">
+        {% for group in rule_groups %}
+        <div class="rule-group" data-group-id="{{ group.id }}">
+            <div class="rule-group-header" onclick="toggleGroup(this)">
+                <span class="rule-type-badge {{ group.rule_type }}">
+                    {{ '進場' if group.rule_type == 'entry' else '出場' }}
+                </span>
+                <span class="rule-group-name">{{ group.name }}</span>
+                <span class="toggle-icon">&#9660;</span>
+            </div>
+            <div class="rule-group-body">
+                <div class="conditions-list">
+                    {% for condition in group.conditions %}
+                    <div class="condition-row" data-condition-id="{{ condition.id }}">
+                        {% if not loop.first %}
+                        <span class="logic-op">{{ group.logic_operators[loop.index0 - 1].value }}</span>
+                        {% endif %}
+                        <span class="condition-text">
+                            {{ condition.indicator_type.value }}:
+                            {{ condition.left_param }}
+                            {{ condition.operator.value }}
+                            {{ condition.right_param }}
+                        </span>
+                        <button class="btn btn-sm btn-delete" onclick="deleteCondition('{{ group.id }}', '{{ condition.id }}')">&#10005;</button>
+                    </div>
+                    {% endfor %}
+                </div>
+                <div class="add-condition-form" data-group-id="{{ group.id }}">
+                    <select class="select-indicator-type">
+                        <option value="">選擇指標</option>
+                        {% for t in indicator_types %}
+                        <option value="{{ t }}">{{ t }}</option>
+                        {% endfor %}
+                    </select>
+                    <select class="select-left-param"><option value="">左側參數</option></select>
+                    <select class="select-operator">
+                        {% for op in operators %}
+                        <option value="{{ op }}">{{ op }}</option>
+                        {% endfor %}
+                    </select>
+                    <select class="select-right-param"><option value="">右側參數</option></select>
+                    <select class="select-logic-op">
+                        <option value="AND">AND</option>
+                        <option value="OR">OR</option>
+                    </select>
+                    <button class="btn btn-sm btn-primary" onclick="addCondition('{{ group.id }}')">新增</button>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</div>

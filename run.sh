@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 #
-# 啟動 Docker container 執行主程式，並掛載 logs 資料夾。
+# 啟動 Docker container 執行 Web 儀表板，並掛載 logs 資料夾。
 
 set -euo pipefail
 
@@ -13,6 +13,7 @@ mkdir -p "${LOGS_DIR}"
 
 echo "=== 啟動 ${IMAGE_NAME} ==="
 docker run --rm \
+  -p "${HOST_PORT:-5001}:5001" \
   -v "${LOGS_DIR}:/app/logs" \
   "${IMAGE_NAME}"
 echo "=== 執行完畢 ==="

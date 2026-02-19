@@ -1,6 +1,8 @@
 """主模組單元測試。"""
 
+import sys
 import unittest
+from unittest.mock import patch
 
 from tw_stock_indicator import __version__
 from tw_stock_indicator.main import main
@@ -15,8 +17,9 @@ class TestPackageImport(unittest.TestCase):
         self.assertTrue(len(__version__) > 0)
 
     def test_main_runs(self):
-        """確認 main 函式可正常執行。"""
-        main()
+        """確認 main 函式可正常執行（無 --web 參數）。"""
+        with patch.object(sys, "argv", ["main"]):
+            main()
 
 
 if __name__ == "__main__":

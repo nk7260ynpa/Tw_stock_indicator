@@ -1,0 +1,7 @@
+<div class="indicator-card" data-code="{{ ind.code }}">
+    <div class="indicator-name">{{ ind.name }}</div>
+    <div class="indicator-value {% if ind.value < 0 %}negative{% else %}positive{% endif %}">
+        {{ ind.formatted_value() }}
+    </div>
+    <div class="indicator-desc">{{ ind.description }}</div>
+</div>

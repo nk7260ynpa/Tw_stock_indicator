@@ -7,4 +7,6 @@ RUN pip install --no-cache-dir -r requirements.txt
 
 COPY . .
 
-CMD ["python", "-m", "tw_stock_indicator.main"]
+EXPOSE 5001
+
+CMD ["python", "-m", "tw_stock_indicator.main", "--web"]

@@ -38,6 +38,7 @@ tw_stock_indicator/              # 主程式套件
         static/
             css/main.css         # 深色主題樣式
             js/dashboard.js      # 卡片互動
+            js/chart.js          # K 線圖渲染（Lightweight Charts）
             js/stock_selector.js # 股票搜尋與日期互動
             js/rule_designer.js  # 規則設計器互動
 tests/                           # 單元測試
@@ -91,6 +92,7 @@ HOST_PORT=8080 DB_HOST=myhost DB_USER=myuser DB_PASSWORD=mypass bash run.sh
 - **日期區間選擇**：選定起始與結束日期後，載入該股票的日線資料
 - **規則設計器**：可新增/刪除進出場規則群組與條件，支援多種技術指標（MA、RSI、MACD、KD、布林通道）
 - **回測計算**：根據設定的進出場規則與日線資料執行回測，計算 8 項績效指標（勝率、獲利因子、期望值、最大回撤、夏普比率、獲利虧損比、年化報酬率、總交易次數）
+- **技術分析圖表**：回測完成後顯示 K 線圖（含成交量）、進出場標記（買/賣箭頭）、疊加規則使用中的技術指標線（MA、布林通道、RSI、KD、MACD），使用 TradingView Lightweight Charts v4
 - **績效指標卡片**：回測完成後顯示計算結果（預設隱藏，點擊「計算」後顯示）
 
 ### API 端點

@@ -283,16 +283,18 @@ class TestBacktestService(unittest.TestCase):
     def test_empty_data_returns_zero(self):
         """確認空資料回傳全 0 指標。"""
         result = backtest_service.run_backtest([], [], 1000)
-        self.assertEqual(len(result), 8)
-        for ind in result:
+        self.assertEqual(len(result["indicators"]), 8)
+        for ind in result["indicators"]:
             self.assertEqual(ind.value, 0)
+        self.assertEqual(result["trades"], [])
+        self.assertEqual(result["indicator_series"], {})
 
     def test_no_rules_returns_zero(self):
         """確認無規則回傳全 0 指標。"""
         daily = _make_daily([100.0] * 10)
         result = backtest_service.run_backtest(daily, [], 1000)
-        self.assertEqual(len(result), 8)
-        for ind in result:
+        self.assertEqual(len(result["indicators"]), 8)
+        for ind in result["indicators"]:
             self.assertEqual(ind.value, 0)
 
     def test_basic_backtest(self):
@@ -316,10 +318,10 @@ class TestBacktestService(unittest.TestCase):
         result = backtest_service.run_backtest(
             daily, [entry_group, exit_group], 1000
         )
-        self.assertEqual(len(result), 8)
+        self.assertEqual(len(result["indicators"]), 8)
 
         # 找到各指標
-        codes = {ind.code: ind for ind in result}
+        codes = {ind.code: ind for ind in result["indicators"]}
         self.assertIn("win_rate", codes)
         self.assertIn("total_trades", codes)
         self.assertIn("profit_factor", codes)
@@ -350,7 +352,7 @@ class TestBacktestService(unittest.TestCase):
         result = backtest_service.run_backtest(
             daily, [entry_group, exit_group], 1000
         )
-        codes = {ind.code: ind for ind in result}
+        codes = {ind.code: ind for ind in result["indicators"]}
 
         # 持續上漲環境，總交易次數應 >= 0
         self.assertGreaterEqual(codes["total_trades"].value, 0)
@@ -370,6 +372,77 @@ class TestBacktestService(unittest.TestCase):
         self.assertEqual(codes["win_rate"].value, 100.0)
         # 無虧損交易，獲利因子為最大值
         self.assertEqual(codes["profit_factor"].value, 999.99)
+
+
+class TestBacktestChartData(unittest.TestCase):
+    """回測圖表資料測試。"""
+
+    def _run_ma_backtest(self, closes=None):
+        """執行 MA 交叉回測並回傳結果。"""
+        if closes is None:
+            closes = (
+                [100.0 - i for i in range(15)]
+                + [86.0 + i * 2 for i in range(15)]
+            )
+        daily = _make_daily(closes)
+        entry_group = RuleGroup(name="進場", rule_type="entry")
+        entry_group.conditions = [
+            Condition(IndicatorType.MA, "MA5", Operator.CROSS_ABOVE, "MA20"),
+        ]
+        exit_group = RuleGroup(name="出場", rule_type="exit")
+        exit_group.conditions = [
+            Condition(IndicatorType.MA, "MA5", Operator.CROSS_BELOW, "MA20"),
+        ]
+        return backtest_service.run_backtest(
+            daily, [entry_group, exit_group], 1000
+        )
+
+    def test_trades_contain_dates(self):
+        """確認交易紀錄包含 entry_date 和 exit_date。"""
+        result = self._run_ma_backtest()
+        for trade in result["trades"]:
+            self.assertIn("entry_date", trade)
+            self.assertIn("exit_date", trade)
+            # 日期格式驗證
+            self.assertRegex(trade["entry_date"], r"^\d{4}-\d{2}-\d{2}$")
+            self.assertRegex(trade["exit_date"], r"^\d{4}-\d{2}-\d{2}$")
+
+    def test_indicator_series_only_relevant(self):
+        """確認 MA 規則不含 RSI/KD/MACD 指標序列。"""
+        result = self._run_ma_backtest()
+        series = result["indicator_series"]
+        # 應包含 MA5、MA20
+        self.assertIn("MA5", series)
+        self.assertIn("MA20", series)
+        # 不應包含 RSI/KD/MACD
+        for key in ("RSI6", "RSI12", "RSI24", "K", "D", "DIF", "MACD", "OSC"):
+            self.assertNotIn(key, series)
+
+    def test_bollinger_includes_all_bands(self):
+        """確認布林通道規則包含三條線。"""
+        closes = [100.0 + i * 0.5 for i in range(30)]
+        daily = _make_daily(closes)
+        entry_group = RuleGroup(name="進場", rule_type="entry")
+        entry_group.conditions = [
+            Condition(IndicatorType.BOLLINGER, "收盤價", Operator.LT, "下軌"),
+        ]
+        exit_group = RuleGroup(name="出場", rule_type="exit")
+        exit_group.conditions = [
+            Condition(IndicatorType.BOLLINGER, "收盤價", Operator.GT, "上軌"),
+        ]
+        result = backtest_service.run_backtest(
+            daily, [entry_group, exit_group], 1000
+        )
+        series = result["indicator_series"]
+        self.assertIn("上軌", series)
+        self.assertIn("中軌", series)
+        self.assertIn("下軌", series)
+
+    def test_empty_data_returns_empty_trades(self):
+        """確認空資料回傳 trades=[] 及 indicator_series={}。"""
+        result = backtest_service.run_backtest([], [], 1000)
+        self.assertEqual(result["trades"], [])
+        self.assertEqual(result["indicator_series"], {})
 
 
 if __name__ == "__main__":

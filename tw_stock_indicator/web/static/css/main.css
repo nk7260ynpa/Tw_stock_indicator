@@ -505,3 +505,49 @@ body {
     cursor: wait;
     pointer-events: none;
 }
+
+/* 圖表區塊 */
+.chart-container {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 16px;
+}
+
+.chart-main {
+    width: 100%;
+    height: 450px;
+}
+
+.chart-sub-wrapper {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 16px;
+    margin-top: 12px;
+}
+
+.chart-sub-label {
+    font-size: 0.75rem;
+    color: var(--text-secondary);
+    margin-bottom: 8px;
+}
+
+.chart-sub {
+    width: 100%;
+    height: 180px;
+}
+
+#chart-section.fade-in {
+    animation: fadeIn 0.4s ease-in;
+}
+
+@media (max-width: 700px) {
+    .chart-main {
+        height: 300px;
+    }
+
+    .chart-sub {
+        height: 140px;
+    }
+}

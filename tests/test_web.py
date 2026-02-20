@@ -47,6 +47,13 @@ class TestDashboard(TestWebBase):
         self.assertIn("stock-selector", html)
         self.assertIn("stock-search-input", html)
 
+    def test_index_contains_chart_section(self):
+        """確認首頁包含圖表區塊。"""
+        resp = self.client.get("/")
+        html = resp.data.decode("utf-8")
+        self.assertIn('id="chart-section"', html)
+        self.assertIn('id="main-chart"', html)
+
 
 class TestIndicatorAPI(TestWebBase):
     """指標 API 測試。"""
@@ -232,7 +239,7 @@ class TestBacktestAPI(TestWebBase):
     """回測 API 測試。"""
 
     def test_backtest_success(self):
-        """確認回測正確回傳指標。"""
+        """確認回測正確回傳指標、交易紀錄與指標序列。"""
         daily_data = [
             {"date": f"2024-01-{i+1:02d}", "open": 100.0 + i,
              "high": 102.0 + i, "low": 99.0 + i, "close": 101.0 + i,
@@ -247,12 +254,18 @@ class TestBacktestAPI(TestWebBase):
         )
         self.assertEqual(resp.status_code, 200)
         data = json.loads(resp.data)
-        self.assertIsInstance(data, list)
-        self.assertEqual(len(data), 8)
+        self.assertIsInstance(data, dict)
+        self.assertIn("indicators", data)
+        self.assertIn("trades", data)
+        self.assertIn("indicator_series", data)
+        self.assertEqual(len(data["indicators"]), 8)
 
-        codes = [d["code"] for d in data]
+        codes = [d["code"] for d in data["indicators"]]
         self.assertIn("win_rate", codes)
         self.assertIn("total_trades", codes)
+
+        self.assertIsInstance(data["trades"], list)
+        self.assertIsInstance(data["indicator_series"], dict)
 
     def test_backtest_missing_data(self):
         """確認缺少 daily_data 回傳 400。"""

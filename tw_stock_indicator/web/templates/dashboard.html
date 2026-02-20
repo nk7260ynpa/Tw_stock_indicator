@@ -11,6 +11,16 @@
     {% include "components/rule_designer.html" %}
 </section>
 
+<section id="chart-section" class="section" style="display:none;">
+    <h2 class="section-title">技術分析圖表
+        <span id="chart-meta" class="backtest-meta"></span>
+    </h2>
+    <div id="chart-container" class="chart-container">
+        <div id="main-chart" class="chart-main"></div>
+    </div>
+    <div id="sub-charts-container"></div>
+</section>
+
 <section id="indicator-section" class="section" style="display:none;">
     <h2 class="section-title">績效指標
         <span id="backtest-meta" class="backtest-meta"></span>
@@ -29,6 +39,7 @@
     window.OPERATORS = {{ operators | tojson }};
 </script>
 <script src="{{ url_for('static', filename='js/dashboard.js') }}"></script>
+<script src="{{ url_for('static', filename='js/chart.js') }}"></script>
 <script src="{{ url_for('static', filename='js/stock_selector.js') }}"></script>
 <script src="{{ url_for('static', filename='js/rule_designer.js') }}"></script>
 {% endblock %}

@@ -206,10 +206,19 @@
                 if (!result) return;
 
                 // 更新指標卡片
-                updateIndicatorCards(result);
+                updateIndicatorCards(result.indicators);
 
-                // 顯示績效指標區塊
+                // 先顯示區塊（讓容器有寬高），再渲染圖表
+                showChartSection();
                 showIndicatorSection();
+
+                if (window.StockChart) {
+                    window.StockChart.render(
+                        window.currentStockData,
+                        result.trades,
+                        result.indicator_series
+                    );
+                }
 
                 showLoadStatus(
                     '回測完成（' + currentStock.code + ' ' + currentStock.name
@@ -270,14 +279,34 @@
         grid.innerHTML = html;
     }
 
-    /** 顯示績效指標區塊 + 動畫 + 滾動 */
+    /** 顯示圖表區塊 + 動畫 + 滾動 */
+    function showChartSection() {
+        var section = document.getElementById('chart-section');
+        if (!section) return;
+
+        section.style.display = '';
+        section.classList.remove('fade-in');
+        void section.offsetWidth;
+        section.classList.add('fade-in');
+
+        // 更新圖表資訊
+        var meta = document.getElementById('chart-meta');
+        if (meta && currentStock) {
+            meta.textContent = '（' + currentStock.code + ' '
+                + currentStock.name + '，' + window.currentShares + ' 股）';
+        }
+
+        // 自動滾動到圖表區塊
+        section.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+
+    /** 顯示績效指標區塊 + 動畫 */
     function showIndicatorSection() {
         var section = document.getElementById('indicator-section');
         if (!section) return;
 
         section.style.display = '';
         section.classList.remove('fade-in');
-        // 觸發 reflow 以重新播放動畫
         void section.offsetWidth;
         section.classList.add('fade-in');
 
@@ -287,9 +316,6 @@
             meta.textContent = '（' + currentStock.code + ' '
                 + currentStock.name + '，' + window.currentShares + ' 股）';
         }
-
-        // 自動滾動到績效指標區塊
-        section.scrollIntoView({ behavior: 'smooth', block: 'start' });
     }
 
     /** 重設按鈕狀態 */

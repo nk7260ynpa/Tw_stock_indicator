@@ -52,7 +52,8 @@ def _simulate_trades(
         shares: 每筆交易股數。
 
     Returns:
-        交易紀錄列表，每筆包含 entry_price、exit_price、pnl、entry_idx、exit_idx。
+        交易紀錄列表，每筆包含 entry_price、exit_price、pnl、
+        entry_idx、exit_idx、entry_date、exit_date。
     """
     n = len(daily_data)
     trades: list[dict] = []
@@ -68,14 +69,17 @@ def _simulate_trades(
             in_position = True
         elif in_position and exit_signals[i]:
             # 訊號日 i → 次日 i+1 開盤賣出
-            exit_price = daily_data[i + 1]["open"]
+            exit_idx = i + 1
+            exit_price = daily_data[exit_idx]["open"]
             pnl = (exit_price - entry_price) * shares
             trades.append({
                 "entry_price": entry_price,
                 "exit_price": exit_price,
                 "pnl": pnl,
                 "entry_idx": entry_idx,
-                "exit_idx": i + 1,
+                "exit_idx": exit_idx,
+                "entry_date": daily_data[entry_idx]["date"],
+                "exit_date": daily_data[exit_idx]["date"],
             })
             in_position = False
 
@@ -89,6 +93,8 @@ def _simulate_trades(
             "pnl": pnl,
             "entry_idx": entry_idx,
             "exit_idx": n - 1,
+            "entry_date": daily_data[entry_idx]["date"],
+            "exit_date": daily_data[n - 1]["date"],
         })
 
     return trades
@@ -215,11 +221,60 @@ def _calc_performance(
     ]
 
 
+def _extract_relevant_series(
+    rule_groups: list[RuleGroup],
+    series: dict[str, list[float | None]],
+) -> dict[str, list[float | None]]:
+    """根據規則群組中引用的參數，篩選出需要的技術指標序列。
+
+    布林通道自動包含三條線、MACD 包含 DIF/MACD/OSC、KD 包含 K/D。
+    排除常數（0, 20, 30, 50, 70, 80）和收盤價（前端已有）。
+
+    Args:
+        rule_groups: 規則群組列表。
+        series: 完整的技術指標序列字典。
+
+    Returns:
+        篩選後的指標序列字典。
+    """
+    excluded = {"0", "20", "30", "50", "70", "80", "收盤價"}
+
+    # 收集規則中引用的所有參數
+    referenced: set[str] = set()
+    for group in rule_groups:
+        for cond in group.conditions:
+            referenced.add(cond.left_param)
+            referenced.add(cond.right_param)
+
+    # 擴展關聯指標
+    expanded: set[str] = set()
+    for param in referenced:
+        if param in excluded:
+            continue
+        expanded.add(param)
+        # 布林通道：任一軌被引用，三條都包含
+        if param in ("上軌", "中軌", "下軌"):
+            expanded.update(("上軌", "中軌", "下軌"))
+        # MACD：任一被引用，三個都包含
+        if param in ("DIF", "MACD", "OSC"):
+            expanded.update(("DIF", "MACD", "OSC"))
+        # KD：任一被引用，兩個都包含
+        if param in ("K", "D"):
+            expanded.update(("K", "D"))
+
+    result: dict[str, list[float | None]] = {}
+    for key in expanded:
+        if key in series:
+            result[key] = series[key]
+
+    return result
+
+
 def run_backtest(
     daily_data: list[dict],
     rule_groups: list[RuleGroup],
     shares: int = 1000,
-) -> list[Indicator]:
+) -> dict:
     """執行回測。
 
     流程：
@@ -234,15 +289,22 @@ def run_backtest(
         shares: 每筆交易股數。
 
     Returns:
-        包含 8 個 Indicator 物件的績效指標列表。
+        包含 indicators（績效指標列表）、trades（交易紀錄）、
+        indicator_series（相關技術指標序列）的字典。
     """
+    empty_result = {
+        "indicators": _zero_indicators(),
+        "trades": [],
+        "indicator_series": {},
+    }
+
     if not daily_data or len(daily_data) < 2:
         logger.warning("日線資料不足，無法執行回測")
-        return _zero_indicators()
+        return empty_result
 
     if not rule_groups:
         logger.warning("無規則群組，無法執行回測")
-        return _zero_indicators()
+        return empty_result
 
     # 1. 計算技術指標
     series = indicator_calculator.build_indicator_series(daily_data)
@@ -259,4 +321,13 @@ def run_backtest(
     logger.info("回測完成：%d 筆交易", len(trades))
 
     # 4. 計算績效
-    return _calc_performance(trades, daily_data, shares)
+    indicators = _calc_performance(trades, daily_data, shares)
+
+    # 5. 篩選相關指標序列
+    indicator_series = _extract_relevant_series(rule_groups, series)
+
+    return {
+        "indicators": indicators,
+        "trades": trades,
+        "indicator_series": indicator_series,
+    }

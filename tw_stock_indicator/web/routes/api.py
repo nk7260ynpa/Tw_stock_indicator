@@ -167,14 +167,16 @@ def run_backtest():
         return jsonify({"error": "尚未設定進出場規則"}), 400
 
     try:
-        indicators = backtest_service.run_backtest(daily_data, rule_groups, shares)
+        backtest_result = backtest_service.run_backtest(
+            daily_data, rule_groups, shares
+        )
     except Exception:
         logger.exception("回測計算失敗")
         return jsonify({"error": "回測計算失敗"}), 500
 
-    result = []
-    for ind in indicators:
-        result.append({
+    indicators = []
+    for ind in backtest_result["indicators"]:
+        indicators.append({
             "code": ind.code,
             "name": ind.name,
             "value": ind.value,
@@ -183,7 +185,11 @@ def run_backtest():
             "formatted_value": ind.formatted_value(),
         })
 
-    return jsonify(result)
+    return jsonify({
+        "indicators": indicators,
+        "trades": backtest_result["trades"],
+        "indicator_series": backtest_result["indicator_series"],
+    })
 
 
 @api_bp.route("/stocks/<market>/<code>/date-range")

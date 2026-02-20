@@ -264,7 +264,9 @@
         var html = '';
         indicators.forEach(function (ind) {
             var valueClass = 'indicator-value';
-            if (ind.value < 0) {
+            if (ind.value === null) {
+                // None → "--"，不加顏色
+            } else if (ind.value < 0) {
                 valueClass += ' negative';
             } else {
                 valueClass += ' positive';

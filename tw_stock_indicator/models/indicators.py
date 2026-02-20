@@ -20,7 +20,7 @@ class Indicator:
 
     code: str
     name: str
-    value: float
+    value: float | None
     unit: str
     description: str
 
@@ -29,7 +29,10 @@ class Indicator:
 
         Returns:
             格式化後的字串，例如 '62.5%'、'1.85 倍'。
+            當 value 為 None 時回傳 '--'。
         """
+        if self.value is None:
+            return "--"
         if self.unit == "%":
             return f"{self.value}%"
         if self.unit in ("倍", "次"):

@@ -57,6 +57,14 @@ class TestIndicator(unittest.TestCase):
         )
         self.assertEqual(ind.formatted_value(), "128 次")
 
+    def test_formatted_value_none(self):
+        """確認 value 為 None 時格式化為 '--'。"""
+        ind = Indicator(
+            code="pf", name="獲利因子", value=None,
+            unit="倍", description="",
+        )
+        self.assertEqual(ind.formatted_value(), "--")
+
     def test_frozen(self):
         """確認 Indicator 為不可變物件。"""
         ind = Indicator(

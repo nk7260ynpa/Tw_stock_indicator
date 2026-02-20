@@ -370,8 +370,9 @@ class TestBacktestService(unittest.TestCase):
 
         codes = {ind.code: ind for ind in result}
         self.assertEqual(codes["win_rate"].value, 100.0)
-        # 無虧損交易，獲利因子為最大值
-        self.assertEqual(codes["profit_factor"].value, 999.99)
+        # 無虧損交易，分母為 0，獲利因子為 None
+        self.assertIsNone(codes["profit_factor"].value)
+        self.assertEqual(codes["profit_factor"].formatted_value(), "--")
 
 
 class TestBacktestChartData(unittest.TestCase):

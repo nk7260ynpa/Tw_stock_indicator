@@ -129,12 +129,10 @@ def _calc_performance(
     # 勝率
     win_rate = len(winning) / total_trades * 100
 
-    # 獲利因子
+    # 獲利因子（分母為 0 時設為 None，前端顯示 "--"）
     profit_factor = (
-        total_profit / abs(total_loss) if total_loss != 0 else float("inf")
+        total_profit / abs(total_loss) if total_loss != 0 else None
     )
-    if profit_factor == float("inf"):
-        profit_factor = 999.99
 
     # 期望值
     total_pnl = sum(t["pnl"] for t in trades)
@@ -143,7 +141,8 @@ def _calc_performance(
     # 獲利虧損比
     avg_profit = total_profit / len(winning) if winning else 0.0
     avg_loss = abs(total_loss) / len(losing) if losing else 0.0
-    profit_loss_ratio = avg_profit / avg_loss if avg_loss > 0 else 999.99
+    # 獲利虧損比（分母為 0 時設為 None，前端顯示 "--"）
+    profit_loss_ratio = avg_profit / avg_loss if avg_loss > 0 else None
 
     # 最大回撤（基於資產曲線）
     # 以第一筆交易的買入成本作為初始資本
@@ -203,8 +202,9 @@ def _calc_performance(
     return [
         Indicator("win_rate", "勝率", round(win_rate, 1), "%",
                   "獲利交易佔總交易次數的比例"),
-        Indicator("profit_factor", "獲利因子", round(profit_factor, 2), "倍",
-                  "總獲利金額除以總虧損金額"),
+        Indicator("profit_factor", "獲利因子",
+                  round(profit_factor, 2) if profit_factor is not None else None,
+                  "倍", "總獲利金額除以總虧損金額"),
         Indicator("expected_value", "期望值", round(expected_value, 2), "元",
                   "每筆交易的平均預期損益"),
         Indicator("max_drawdown", "最大回撤", max_drawdown, "%",
@@ -212,8 +212,8 @@ def _calc_performance(
         Indicator("sharpe_ratio", "夏普比率", round(sharpe, 2), "倍",
                   "每承受一單位風險所獲得的超額報酬"),
         Indicator("profit_loss_ratio", "平均獲利虧損比",
-                  round(profit_loss_ratio, 2), "倍",
-                  "平均獲利金額除以平均虧損金額"),
+                  round(profit_loss_ratio, 2) if profit_loss_ratio is not None else None,
+                  "倍", "平均獲利金額除以平均虧損金額"),
         Indicator("annual_return", "年化報酬率", round(annual_return, 2), "%",
                   "投資報酬換算為年度的複利報酬率"),
         Indicator("total_trades", "總交易次數", total_trades, "次",

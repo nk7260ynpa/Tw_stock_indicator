@@ -17,6 +17,28 @@ _RISK_FREE_RATE = 0.015
 # 一年約 250 個交易日
 _TRADING_DAYS_PER_YEAR = 250
 
+# 券商手續費費率 0.1425%
+_COMMISSION_RATE = 0.001425
+# 最低手續費 20 元
+_MIN_COMMISSION = 20
+# 證交稅費率 0.3%（僅賣出時收取）
+_TAX_RATE = 0.003
+
+
+def _calc_commission(amount: float) -> int:
+    """計算券商手續費。
+
+    手續費 = 成交金額 × 0.1425%，無條件捨去取整，
+    低於最低手續費 20 元時收 20 元。
+
+    Args:
+        amount: 成交金額。
+
+    Returns:
+        手續費（整數元）。
+    """
+    return max(math.floor(amount * _COMMISSION_RATE), _MIN_COMMISSION)
+
 
 def _zero_indicators() -> list[Indicator]:
     """回傳全 0 的績效指標。"""
@@ -53,6 +75,7 @@ def _simulate_trades(
 
     Returns:
         交易紀錄列表，每筆包含 entry_price、exit_price、pnl、
+        buy_fee、sell_fee、tax、total_fees、
         entry_idx、exit_idx、entry_date、exit_date。
     """
     n = len(daily_data)
@@ -71,11 +94,21 @@ def _simulate_trades(
             # 訊號日 i → 次日 i+1 開盤賣出
             exit_idx = i + 1
             exit_price = daily_data[exit_idx]["open"]
-            pnl = (exit_price - entry_price) * shares
+            buy_amount = entry_price * shares
+            sell_amount = exit_price * shares
+            buy_fee = _calc_commission(buy_amount)
+            sell_fee = _calc_commission(sell_amount)
+            tax = math.floor(sell_amount * _TAX_RATE)
+            total_fees = buy_fee + sell_fee + tax
+            pnl = sell_amount - buy_amount - total_fees
             trades.append({
                 "entry_price": entry_price,
                 "exit_price": exit_price,
                 "pnl": pnl,
+                "buy_fee": buy_fee,
+                "sell_fee": sell_fee,
+                "tax": tax,
+                "total_fees": total_fees,
                 "entry_idx": entry_idx,
                 "exit_idx": exit_idx,
                 "entry_date": daily_data[entry_idx]["date"],
@@ -86,11 +119,21 @@ def _simulate_trades(
     # 最後仍持倉：以最後一根收盤價強制出場
     if in_position:
         exit_price = daily_data[-1]["close"]
-        pnl = (exit_price - entry_price) * shares
+        buy_amount = entry_price * shares
+        sell_amount = exit_price * shares
+        buy_fee = _calc_commission(buy_amount)
+        sell_fee = _calc_commission(sell_amount)
+        tax = math.floor(sell_amount * _TAX_RATE)
+        total_fees = buy_fee + sell_fee + tax
+        pnl = sell_amount - buy_amount - total_fees
         trades.append({
             "entry_price": entry_price,
             "exit_price": exit_price,
             "pnl": pnl,
+            "buy_fee": buy_fee,
+            "sell_fee": sell_fee,
+            "tax": tax,
+            "total_fees": total_fees,
             "entry_idx": entry_idx,
             "exit_idx": n - 1,
             "entry_date": daily_data[entry_idx]["date"],
@@ -145,8 +188,8 @@ def _calc_performance(
     profit_loss_ratio = avg_profit / avg_loss if avg_loss > 0 else None
 
     # 最大回撤（基於資產曲線）
-    # 以第一筆交易的買入成本作為初始資本
-    initial_capital = trades[0]["entry_price"] * shares
+    # 以第一筆交易的買入成本（含手續費）作為初始資本
+    initial_capital = trades[0]["entry_price"] * shares + trades[0]["buy_fee"]
     equity = initial_capital
     peak = equity
     max_dd = 0.0
@@ -175,7 +218,7 @@ def _calc_performance(
     # 夏普比率（以每筆交易報酬率計算）
     trade_returns = []
     for t in trades:
-        cost = t["entry_price"] * shares
+        cost = t["entry_price"] * shares + t["buy_fee"]
         if cost > 0:
             trade_returns.append(t["pnl"] / cost)
 

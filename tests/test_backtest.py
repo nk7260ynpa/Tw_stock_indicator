@@ -361,9 +361,16 @@ class TestBacktestService(unittest.TestCase):
         """確認全勝時獲利因子為最大值。"""
         # 手動建構確保有獲利交易的場景
         # 使用直接的訊號模擬來驗證 _calc_performance
+        buy_fee = backtest_service._calc_commission(100.0 * 1000)
+        sell_fee = backtest_service._calc_commission(110.0 * 1000)
+        tax = int(110.0 * 1000 * 0.003)
+        total_fees = buy_fee + sell_fee + tax
+        pnl = (110.0 - 100.0) * 1000 - total_fees
         trades = [
             {"entry_price": 100.0, "exit_price": 110.0,
-             "pnl": 10000.0, "entry_idx": 0, "exit_idx": 5},
+             "pnl": pnl, "buy_fee": buy_fee, "sell_fee": sell_fee,
+             "tax": tax, "total_fees": total_fees,
+             "entry_idx": 0, "exit_idx": 5},
         ]
         daily = _make_daily([100.0] * 10)
         result = backtest_service._calc_performance(trades, daily, 1000)
@@ -373,6 +380,101 @@ class TestBacktestService(unittest.TestCase):
         # 無虧損交易，分母為 0，獲利因子為 None
         self.assertIsNone(codes["profit_factor"].value)
         self.assertEqual(codes["profit_factor"].formatted_value(), "--")
+
+
+class TestTradeFees(unittest.TestCase):
+    """交易稅費計算測試。"""
+
+    def test_commission_calculation(self):
+        """確認手續費計算正確。"""
+        # 100 元 × 1000 股 = 100,000 元
+        # 100000 × 0.001425 = 142.5 → floor → 142
+        self.assertEqual(backtest_service._calc_commission(100_000), 142)
+
+        # 500 元 × 1000 股 = 500,000 元
+        # 500000 × 0.001425 = 712.5 → floor → 712
+        self.assertEqual(backtest_service._calc_commission(500_000), 712)
+
+    def test_commission_minimum(self):
+        """確認手續費最低 20 元限制。"""
+        # 10 元 × 100 股 = 1,000 元
+        # 1000 × 0.001425 = 1.425 → floor → 1 → 低於 20 → 收 20
+        self.assertEqual(backtest_service._calc_commission(1_000), 20)
+
+        # 0 元
+        self.assertEqual(backtest_service._calc_commission(0), 20)
+
+    def test_trade_includes_fees(self):
+        """確認交易紀錄包含手續費欄位。"""
+        closes = (
+            [100.0 - i for i in range(15)]
+            + [86.0 + i * 2 for i in range(15)]
+        )
+        daily = _make_daily(closes)
+
+        entry_group = RuleGroup(name="進場", rule_type="entry")
+        entry_group.conditions = [
+            Condition(IndicatorType.MA, "MA5", Operator.CROSS_ABOVE, "MA20"),
+        ]
+        exit_group = RuleGroup(name="出場", rule_type="exit")
+        exit_group.conditions = [
+            Condition(IndicatorType.MA, "MA5", Operator.CROSS_BELOW, "MA20"),
+        ]
+
+        result = backtest_service.run_backtest(
+            daily, [entry_group, exit_group], 1000
+        )
+
+        for trade in result["trades"]:
+            self.assertIn("buy_fee", trade)
+            self.assertIn("sell_fee", trade)
+            self.assertIn("tax", trade)
+            self.assertIn("total_fees", trade)
+            self.assertEqual(
+                trade["total_fees"],
+                trade["buy_fee"] + trade["sell_fee"] + trade["tax"],
+            )
+
+    def test_pnl_deducts_fees(self):
+        """確認 PnL 已扣除手續費與證交稅。"""
+        # 建立穩定上漲資料，確保有交易產生
+        closes = (
+            [100.0 - i for i in range(15)]
+            + [86.0 + i * 2 for i in range(15)]
+        )
+        daily = _make_daily(closes)
+
+        entry_group = RuleGroup(name="進場", rule_type="entry")
+        entry_group.conditions = [
+            Condition(IndicatorType.MA, "MA5", Operator.CROSS_ABOVE, "MA20"),
+        ]
+        exit_group = RuleGroup(name="出場", rule_type="exit")
+        exit_group.conditions = [
+            Condition(IndicatorType.MA, "MA5", Operator.CROSS_BELOW, "MA20"),
+        ]
+
+        result = backtest_service.run_backtest(
+            daily, [entry_group, exit_group], 1000
+        )
+
+        for trade in result["trades"]:
+            import math
+            buy_amount = trade["entry_price"] * 1000
+            sell_amount = trade["exit_price"] * 1000
+            expected_buy_fee = max(
+                math.floor(buy_amount * 0.001425), 20
+            )
+            expected_sell_fee = max(
+                math.floor(sell_amount * 0.001425), 20
+            )
+            expected_tax = math.floor(sell_amount * 0.003)
+            expected_total = expected_buy_fee + expected_sell_fee + expected_tax
+            expected_pnl = sell_amount - buy_amount - expected_total
+
+            self.assertEqual(trade["buy_fee"], expected_buy_fee)
+            self.assertEqual(trade["sell_fee"], expected_sell_fee)
+            self.assertEqual(trade["tax"], expected_tax)
+            self.assertEqual(trade["pnl"], expected_pnl)
 
 
 class TestBacktestChartData(unittest.TestCase):

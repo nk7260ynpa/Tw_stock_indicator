@@ -265,6 +265,8 @@ class TestBacktestAPI(TestWebBase):
         self.assertIn("total_trades", codes)
 
         self.assertIsInstance(data["trades"], list)
+        for trade in data["trades"]:
+            self.assertIn("total_fees", trade)
         self.assertIsInstance(data["indicator_series"], dict)
 
     def test_backtest_missing_data(self):

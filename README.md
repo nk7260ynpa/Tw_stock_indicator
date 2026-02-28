@@ -114,7 +114,7 @@ HOST_PORT=8080 DB_HOST=myhost DB_USER=myuser DB_PASSWORD=mypass bash run.sh
 先建立 Docker image，再於容器中執行測試：
 
 ```bash
-docker run --rm tw-stock-indicator pytest tests/
+docker run --rm nk7260ynpa/tw-stock-indicator pytest tests/
 ```
 
 ## 授權

@@ -1,6 +1,6 @@
 services:
   web:
-    image: tw-stock-indicator
+    image: nk7260ynpa/tw-stock-indicator
     ports:
       - "${HOST_PORT:-5001}:5001"
     volumes:

@@ -56,7 +56,8 @@ docker/                          # Docker 相關
 logs/                            # log 輸出目錄
     .gitkeep
 run.sh                           # 啟動 Web 儀表板腳本（docker compose）
-requirements.txt                 # Python 依賴清單
+pyproject.toml                   # PEP 621 套件定義（套件元資料與抽象依賴）
+requirements.txt                 # Docker 環境完整釘版依賴
 ```
 
 ## 前置需求

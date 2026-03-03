@@ -118,6 +118,20 @@ HOST_PORT=8080 DB_HOST=myhost DB_USER=myuser DB_PASSWORD=mypass bash run.sh
 docker run --rm nk7260ynpa/tw-stock-indicator pytest tests/
 ```
 
+## CI/CD
+
+本專案使用 GitHub Actions 自動建置並推送 Docker image 至 DockerHub。
+
+- **觸發條件**：推送符合 `v*.*.*` 格式的 tag（例如 `v0.1.0`）
+- **產出 image**：`nk7260ynpa/tw-stock-indicator:<版本號>` 與 `nk7260ynpa/tw-stock-indicator:latest`
+- **所需 Secrets**：`DOCKER_USERNAME`、`DOCKER_PASSWORD`（於 GitHub repo Settings > Secrets 設定）
+
+```bash
+# 建立並推送版本 tag 以觸發自動建置
+git tag v0.1.0
+git push origin v0.1.0
+```
+
 ## 授權
 
 MIT License

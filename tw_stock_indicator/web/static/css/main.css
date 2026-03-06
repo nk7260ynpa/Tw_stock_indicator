@@ -101,11 +101,11 @@ body {
 }
 
 .indicator-value.positive {
-    color: var(--green);
+    color: var(--red);
 }
 
 .indicator-value.negative {
-    color: var(--red);
+    color: var(--green);
 }
 
 .indicator-desc {
@@ -343,13 +343,13 @@ body {
 }
 
 .rule-type-badge.entry {
-    background: rgba(63, 185, 80, 0.2);
-    color: var(--green);
+    background: rgba(248, 81, 73, 0.2);
+    color: var(--red);
 }
 
 .rule-type-badge.exit {
-    background: rgba(248, 81, 73, 0.2);
-    color: var(--red);
+    background: rgba(63, 185, 80, 0.2);
+    color: var(--green);
 }
 
 .rule-group-name {

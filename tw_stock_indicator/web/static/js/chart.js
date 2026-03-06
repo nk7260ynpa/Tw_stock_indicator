@@ -108,14 +108,14 @@
             },
         });
 
-        // K 線（台股：綠漲紅跌）
+        // K 線（台股：紅漲綠跌）
         var candleSeries = chart.addCandlestickSeries({
-            upColor: '#3fb950',
-            downColor: '#f85149',
-            borderUpColor: '#3fb950',
-            borderDownColor: '#f85149',
-            wickUpColor: '#3fb950',
-            wickDownColor: '#f85149',
+            upColor: '#f85149',
+            downColor: '#3fb950',
+            borderUpColor: '#f85149',
+            borderDownColor: '#3fb950',
+            wickUpColor: '#f85149',
+            wickDownColor: '#3fb950',
         });
 
         var candleData = dailyData.map(function (d) {
@@ -143,8 +143,8 @@
                 time: toChartTime(d.date),
                 value: d.volume,
                 color: d.close >= d.open
-                    ? 'rgba(63, 185, 80, 0.3)'
-                    : 'rgba(248, 81, 73, 0.3)',
+                    ? 'rgba(248, 81, 73, 0.3)'
+                    : 'rgba(63, 185, 80, 0.3)',
             };
         });
         volumeSeries.setData(volumeData);
@@ -156,7 +156,7 @@
                 markers.push({
                     time: toChartTime(t.entry_date),
                     position: 'belowBar',
-                    color: '#3fb950',
+                    color: '#f85149',
                     shape: 'arrowUp',
                     text: 'B ' + t.entry_price.toFixed(1),
                 });
@@ -166,7 +166,7 @@
                 markers.push({
                     time: toChartTime(t.exit_date),
                     position: 'aboveBar',
-                    color: '#f85149',
+                    color: '#3fb950',
                     shape: 'arrowDown',
                     text: 'S ' + t.exit_price.toFixed(1) + ' (' + pnlText + ')',
                 });
@@ -253,8 +253,8 @@
                             time: toChartTime(dailyData[j].date),
                             value: values[j],
                             color: values[j] >= 0
-                                ? 'rgba(63, 185, 80, 0.6)'
-                                : 'rgba(248, 81, 73, 0.6)',
+                                ? 'rgba(248, 81, 73, 0.6)'
+                                : 'rgba(63, 185, 80, 0.6)',
                         });
                     }
                 }

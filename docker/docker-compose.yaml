@@ -1,6 +1,7 @@
 services:
   web:
     image: nk7260ynpa/tw-stock-indicator
+    restart: always
     ports:
       - "${HOST_PORT:-5001}:5001"
     volumes:

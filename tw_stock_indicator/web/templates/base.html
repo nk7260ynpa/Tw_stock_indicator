@@ -6,6 +6,10 @@
     <title>{% block title %}台股指標儀表板{% endblock %}</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='css/main.css') }}">
     <script src="https://unpkg.com/lightweight-charts@4/dist/lightweight-charts.standalone.production.js"></script>
+    <script>
+        // 反向代理 base URL；根路徑時為空字串，/app/indicator/ 時為 /app/indicator
+        window.BASE_URL = "{{ url_for('dashboard.index') }}".replace(/\/$/, '');
+    </script>
 </head>
 <body>
     <nav class="navbar">

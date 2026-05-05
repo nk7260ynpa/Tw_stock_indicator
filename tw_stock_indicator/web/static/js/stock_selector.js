@@ -7,6 +7,9 @@
 (function () {
     'use strict';
 
+    /** 反向代理 base URL，避免 API 呼叫走回根路徑 */
+    var BASE_URL = window.BASE_URL || '';
+
     var searchInput = document.getElementById('stock-search-input');
     var dropdown = document.getElementById('search-dropdown');
     var dateStart = document.getElementById('date-start');
@@ -52,7 +55,7 @@
 
     /** 搜尋股票 API */
     function searchStocks(keyword) {
-        fetch('/api/stocks/search?q=' + encodeURIComponent(keyword))
+        fetch(BASE_URL + '/api/stocks/search?q=' + encodeURIComponent(keyword))
             .then(function (res) { return res.json(); })
             .then(function (data) {
                 if (data.error) {
@@ -130,7 +133,7 @@
         dateEnd.disabled = true;
         queryBtn.disabled = true;
 
-        fetch('/api/stocks/' + market + '/' + code + '/date-range')
+        fetch(BASE_URL + '/api/stocks/' + market + '/' + code + '/date-range')
             .then(function (res) { return res.json(); })
             .then(function (data) {
                 if (data.error || !data.min_date) {
@@ -181,7 +184,7 @@
         queryBtn.textContent = '計算中...';
         showLoadStatus('載入日線資料中...', 'info');
 
-        var url = '/api/stocks/' + currentStock.market + '/'
+        var url = BASE_URL + '/api/stocks/' + currentStock.market + '/'
             + currentStock.code + '/daily?start=' + start + '&end=' + end;
 
         fetch(url)
@@ -236,7 +239,7 @@
 
     /** 呼叫回測 API */
     function runBacktest(dailyData, shares) {
-        return fetch('/api/backtest', {
+        return fetch(BASE_URL + '/api/backtest', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({

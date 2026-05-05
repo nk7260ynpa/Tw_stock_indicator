@@ -4,6 +4,11 @@
  * 提供展開/收合、動態載入參數、新增/刪除條件等功能。
  */
 
+/** 取得反向代理 base URL */
+function _ruleDesignerBaseUrl() {
+    return window.BASE_URL || '';
+}
+
 /** 切換規則群組展開/收合 */
 function toggleGroup(header) {
     var group = header.closest('.rule-group');
@@ -22,7 +27,7 @@ function onIndicatorTypeChange(selectEl) {
 
     if (!indicatorType) return;
 
-    fetch('/api/indicators/' + encodeURIComponent(indicatorType) + '/params')
+    fetch(_ruleDesignerBaseUrl() + '/api/indicators/' + encodeURIComponent(indicatorType) + '/params')
         .then(function (res) { return res.json(); })
         .then(function (data) {
             data.params.forEach(function (p) {
@@ -45,7 +50,7 @@ function addCondition(groupId) {
         return;
     }
 
-    fetch('/api/rules/' + groupId + '/conditions', {
+    fetch(_ruleDesignerBaseUrl() + '/api/rules/' + groupId + '/conditions', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -84,7 +89,7 @@ function addCondition(groupId) {
 
 /** 刪除條件 */
 function deleteCondition(groupId, conditionId) {
-    fetch('/api/rules/' + groupId + '/conditions/' + conditionId, {
+    fetch(_ruleDesignerBaseUrl() + '/api/rules/' + groupId + '/conditions/' + conditionId, {
         method: 'DELETE'
     })
     .then(function (res) { return res.json(); })
@@ -100,7 +105,7 @@ function createRuleGroup(ruleType) {
     var name = prompt(ruleType === 'entry' ? '請輸入進場規則名稱：' : '請輸入出場規則名稱：');
     if (!name) return;
 
-    fetch('/api/rules', {
+    fetch(_ruleDesignerBaseUrl() + '/api/rules', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ name: name, rule_type: ruleType })

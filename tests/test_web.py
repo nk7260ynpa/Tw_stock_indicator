@@ -1,22 +1,35 @@
 """Flask 路由與 API 單元測試。"""
 
 import json
+import os
 import unittest
 from unittest.mock import patch
 
 from tw_stock_indicator.services import rule_service
-from tw_stock_indicator.web import create_app
+from tw_stock_indicator.web import ScriptNameMiddleware, create_app
 
 
 class TestWebBase(unittest.TestCase):
-    """Web 測試基礎類別。"""
+    """Web 測試基礎類別。
+
+    測試預設關閉 SCRIPT_NAME 前綴，確保原有路由測試仍適用根路徑。
+    """
 
     def setUp(self):
-        """建立測試用 Flask 應用程式。"""
+        """建立測試用 Flask 應用程式（無 SCRIPT_NAME 前綴）。"""
         rule_service.reset_store()
+        self._saved_script_name = os.environ.get("SCRIPT_NAME")
+        os.environ["SCRIPT_NAME"] = ""
         self.app = create_app()
         self.app.config["TESTING"] = True
         self.client = self.app.test_client()
+
+    def tearDown(self):
+        """還原 SCRIPT_NAME 環境變數。"""
+        if self._saved_script_name is None:
+            os.environ.pop("SCRIPT_NAME", None)
+        else:
+            os.environ["SCRIPT_NAME"] = self._saved_script_name
 
 
 class TestDashboard(TestWebBase):
@@ -310,6 +323,80 @@ class TestBacktestAPI(TestWebBase):
             content_type="application/json",
         )
         self.assertEqual(resp.status_code, 400)
+
+
+class TestScriptNameMiddleware(unittest.TestCase):
+    """ScriptNameMiddleware 與反向代理整合測試。"""
+
+    def setUp(self):
+        """備份 SCRIPT_NAME 環境變數。"""
+        rule_service.reset_store()
+        self._saved_script_name = os.environ.get("SCRIPT_NAME")
+
+    def tearDown(self):
+        """還原 SCRIPT_NAME 環境變數。"""
+        if self._saved_script_name is None:
+            os.environ.pop("SCRIPT_NAME", None)
+        else:
+            os.environ["SCRIPT_NAME"] = self._saved_script_name
+
+    def test_default_script_name_is_app_indicator(self):
+        """確認未設定環境變數時預設為 /app/indicator 前綴。"""
+        os.environ.pop("SCRIPT_NAME", None)
+        app = create_app()
+        self.assertIsInstance(app.wsgi_app, ScriptNameMiddleware)
+        self.assertEqual(app.wsgi_app.script_name, "/app/indicator")
+
+    def test_empty_script_name_disables_middleware(self):
+        """確認 SCRIPT_NAME 空字串時不套用中介層。"""
+        os.environ["SCRIPT_NAME"] = ""
+        app = create_app()
+        self.assertNotIsInstance(app.wsgi_app, ScriptNameMiddleware)
+
+    def test_url_for_includes_script_name(self):
+        """確認 url_for 產生帶前綴的 URL。"""
+        os.environ["SCRIPT_NAME"] = "/app/indicator"
+        app = create_app()
+        app.config["TESTING"] = True
+        client = app.test_client()
+
+        # 透過 /app/indicator/ 存取首頁（模擬 Dashboard 反向代理轉發）
+        resp = client.get("/app/indicator/")
+        self.assertEqual(resp.status_code, 200)
+        html = resp.data.decode("utf-8")
+        # 靜態資源 URL 應包含 /app/indicator 前綴
+        self.assertIn("/app/indicator/static/css/main.css", html)
+        # window.BASE_URL 應為 /app/indicator
+        self.assertIn('window.BASE_URL = "/app/indicator/"', html)
+
+    def test_api_accessible_via_prefix(self):
+        """確認 /app/indicator/api/... 可正確路由至 API 端點。"""
+        os.environ["SCRIPT_NAME"] = "/app/indicator"
+        app = create_app()
+        app.config["TESTING"] = True
+        client = app.test_client()
+
+        resp = client.get("/app/indicator/api/indicators/MA/params")
+        self.assertEqual(resp.status_code, 200)
+        data = json.loads(resp.data)
+        self.assertIn("MA5", data["params"])
+
+    def test_root_path_still_works_when_prefix_set(self):
+        """確認 Dashboard 反向代理 strip 前綴後的根路徑請求仍可正常運作。
+
+        Dashboard FastAPI 會 strip `/app/indicator` 前綴再轉發至後端，
+        所以後端實際收到的是 `/`，仍應正確產生帶前綴的 URL。
+        """
+        os.environ["SCRIPT_NAME"] = "/app/indicator"
+        app = create_app()
+        app.config["TESTING"] = True
+        client = app.test_client()
+
+        resp = client.get("/")
+        self.assertEqual(resp.status_code, 200)
+        html = resp.data.decode("utf-8")
+        # 靜態資源 URL 仍應包含 /app/indicator 前綴
+        self.assertIn("/app/indicator/static/css/main.css", html)
 
 
 if __name__ == "__main__":

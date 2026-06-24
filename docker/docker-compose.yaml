@@ -1,6 +1,9 @@
+name: tw-stock-indicator
+
 services:
   web:
     image: nk7260ynpa/tw-stock-indicator
+    container_name: tw-stock-indicator
     restart: always
     # 不對外公開 port，僅允許透過 db_network 從其他容器存取 5001
     expose:

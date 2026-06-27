@@ -120,17 +120,28 @@ docker run --rm nk7260ynpa/tw-stock-indicator pytest tests/
 
 ## CI/CD
 
-本專案使用 GitHub Actions 自動建置並推送 Docker image 至 DockerHub。
+### GitLab → GitHub 鏡像（`.gitlab-ci.yml`）
+
+開發主線在自架 GitLab，GitHub 為對外鏡像：`origin` → GitLab（預設推送），`github` → GitHub。
+
+- **觸發條件**：在 `main` 打上符合 `vX.Y.Z` 格式的版本 tag（例如 `v0.1.1`）。
+  合併進 `main` 當下**不**鏡像，需打 tag 後才鏡像。
+- **行為**：`mirror-to-github` job 以 GitLab Runner 注入的 SSH 金鑰（`GITHUB_SSH_KEY`）
+  將 `main` 與該版本 tag 一併推送（鏡像）到 GitHub。
+
+```bash
+# 合併進 main 後，於 main 打上版本 tag 才會觸發鏡像
+git tag -a v0.1.1 -m "版本說明"
+git push origin v0.1.1
+```
+
+### GitHub Actions → DockerHub（`.github/workflows/docker-publish.yml`）
+
+鏡像到 GitHub 後，由 GitHub Actions 自動建置並推送 Docker image 至 DockerHub。
 
 - **觸發條件**：推送符合 `v*.*.*` 格式的 tag（例如 `v0.1.0`）
 - **產出 image**：`nk7260ynpa/tw-stock-indicator:<版本號>` 與 `nk7260ynpa/tw-stock-indicator:latest`
 - **所需 Secrets**：`DOCKER_USERNAME`、`DOCKER_PASSWORD`（於 GitHub repo Settings > Secrets 設定）
-
-```bash
-# 建立並推送版本 tag 以觸發自動建置
-git tag v0.1.0
-git push origin v0.1.0
-```
 
 ## 授權
 

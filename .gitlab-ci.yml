@@ -1,10 +1,18 @@
-# GitLab CI/CD：在 main 打上 vX.Y.Z 版本 tag 時，把儲存庫鏡像推送到 GitHub
-# （合併進 main 當下不鏡像）
+# GitLab CI/CD：在 main 打上 vX.Y.Z 版本 tag 時，自動重新部署並把儲存庫鏡像推送到 GitHub
+# （合併進 main 當下不觸發，需打 tag 後才觸發）
 #
 # ── 流程 ───────────────────────────────────────────────────────────
-#   feature 分支 → 開 Merge Request → 合併進 main（此時不鏡像）
+#   feature 分支 → 開 Merge Request → 合併進 main（此時不觸發）
 #   → 在 main 打上 vX.Y.Z 版本 tag → 本管線於該 tag 觸發
-#   → 將 main 與該 tag 一併推送（鏡像）到 GitHub。
+#   → deploy：於 host daemon 本地 build 新 image 並重啟容器
+#   → mirror：將 main 與該 tag 一併推送（鏡像）到 GitHub。
+#
+# ── deploy 執行環境 ────────────────────────────────────────────────
+#   GitLab Runner 為 docker executor 並掛載 /var/run/docker.sock，
+#   故 deploy job 內的 docker 指令直接作用在 host daemon（與主機共用容器、
+#   網路與 volume）。deploy 採「單一 docker build + docker run」而非
+#   docker compose——因 compose 的相對路徑 bind 掛載與服務編排在
+#   socket-bound runner 內會有路徑與情境問題。
 #
 # ── 認證來源 ───────────────────────────────────────────────────────
 #   GITHUB_SSH_KEY  由 GitLab Runner 注入（config.toml 的 environment 或掛載）。
@@ -16,6 +24,7 @@
 #   GIT_DEPTH: 0 取得完整歷史，避免 shallow clone 導致 GitHub 推送被拒。
 
 stages:
+  - deploy
   - mirror
 
 workflow:
@@ -23,9 +32,46 @@ workflow:
     # 僅在 main 打上 vX.Y.Z 版本 tag 時建立管線
     - if: '$CI_COMMIT_TAG =~ /^v\d+\.\d+\.\d+$/'
 
+# ── deploy：tag 觸發後於 host daemon 本地重新部署 ─────────────────────
+#   服務不對外公開 port（僅 expose 5001），由 Dashboard 反代與 server_monitor
+#   經 db_network 存取，故 docker run 不帶 -p。logs 落具名 volume 以保留紀錄。
+deploy:
+  stage: deploy
+  image: docker:27
+  needs: []
+  resource_group: deploy                              # 序列化部署，避免並發互踩
+  rules:
+    - if: '$CI_COMMIT_TAG =~ /^v\d+\.\d+\.\d+$/'
+  variables:
+    IMAGE: "nk7260ynpa/tw-stock-indicator"
+    CONTAINER: "tw-stock-indicator"
+    LOGS_VOLUME: "tw-stock-indicator_logs"
+    LOGS_PATH: "/app/logs"
+  before_script:
+    - export VERSION="${CI_COMMIT_TAG#v}"             # 去掉 v 前綴作為 image 版本標籤
+  script:
+    # 先 build 新 image（同時打版本與 latest 標籤）；build 成功才動既有容器，
+    # 確保部署失敗時舊容器仍存活。
+    - docker build -f docker/Dockerfile -t "$IMAGE:$VERSION" -t "$IMAGE:latest" .
+    # 移除舊容器後再以新 image 啟動（順序：build → rm -f → run）。
+    - docker rm -f "$CONTAINER" || true
+    - docker run -d
+        --name "$CONTAINER"
+        --restart=always
+        --network db_network
+        --env DB_HOST=tw_stock_database
+        --env DB_USER=root
+        --env DB_PASSWORD=stock
+        --env DB_PORT=3306
+        --volume "$LOGS_VOLUME:$LOGS_PATH"
+        "$IMAGE:latest"
+    # 清理懸空 image 釋放磁碟空間。
+    - docker image prune -f || true
+
 mirror-to-github:
   stage: mirror
   image: alpine:3.20
+  needs: []
   variables:
     GIT_DEPTH: 0                                       # 完整歷史，確保可 fast-forward 推送
     GITHUB_REPO: "git@github.com:nk7260ynpa/Tw_stock_indicator.git"

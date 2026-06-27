@@ -120,20 +120,40 @@ docker run --rm nk7260ynpa/tw-stock-indicator pytest tests/
 
 ## CI/CD
 
-### GitLab → GitHub 鏡像（`.gitlab-ci.yml`）
-
 開發主線在自架 GitLab，GitHub 為對外鏡像：`origin` → GitLab（預設推送），`github` → GitHub。
-
-- **觸發條件**：在 `main` 打上符合 `vX.Y.Z` 格式的版本 tag（例如 `v0.1.1`）。
-  合併進 `main` 當下**不**鏡像，需打 tag 後才鏡像。
-- **行為**：`mirror-to-github` job 以 GitLab Runner 注入的 SSH 金鑰（`GITHUB_SSH_KEY`）
-  將 `main` 與該版本 tag 一併推送（鏡像）到 GitHub。
+`.gitlab-ci.yml` 僅在 `main` 打上符合 `vX.Y.Z` 格式的版本 tag（例如 `v0.2.0`）時觸發管線，
+含 `deploy` 與 `mirror` 兩個 stage。合併進 `main` 當下**不**觸發，需打 tag 後才觸發。
 
 ```bash
-# 合併進 main 後，於 main 打上版本 tag 才會觸發鏡像
-git tag -a v0.1.1 -m "版本說明"
-git push origin v0.1.1
+# 合併進 main 後，於 main 打上版本 tag 才會觸發 deploy + mirror
+git tag -a v0.2.0 -m "版本說明"
+git push origin v0.2.0
 ```
+
+### 自動重新部署（`deploy` stage）
+
+GitLab Runner 為 docker executor 並掛載 `/var/run/docker.sock`，故 `deploy` job 內的
+`docker` 指令直接作用在 **host daemon**（與主機共用容器、網路與 volume）。
+
+- **觸發條件**：在 `main` 打上 `vX.Y.Z` 版本 tag。
+- **行為**：採「單一 `docker build` + `docker run`」（非 docker compose，避免相對路徑 bind
+  與服務編排在 socket-bound runner 內出問題），依序執行：
+  1. `docker build -f docker/Dockerfile`，同時打 `:<版本>` 與 `:latest` 標籤（build
+     成功才動既有容器）。
+  2. `docker rm -f tw-stock-indicator`（移除舊容器）。
+  3. `docker run -d` 以新 image 啟動容器：接 `db_network`、帶 DB 連線 env
+     （`tw_stock_database`/`root`/`stock`/`3306`）、**不對外 publish port**（僅 `expose
+     5001`，由 Dashboard 反代存取）。
+  4. `docker image prune -f` 清理懸空 image。
+- **log 落點**：CI 部署後 log 改落**具名 volume** `tw-stock-indicator_logs`（掛載至容器
+  `/app/logs`），有別於本機 `run.sh` 用 compose bind 掛到 repo 內 `logs/`。
+
+### GitLab → GitHub 鏡像（`mirror` stage）
+
+- **觸發條件**：同上，在 `main` 打上 `vX.Y.Z` 版本 tag。
+- **行為**：`mirror-to-github` job 以 GitLab Runner 注入的 SSH 金鑰（`GITHUB_SSH_KEY`）
+  將 `main` 與該版本 tag 一併推送（鏡像）到 GitHub。`needs: []` 使其與 `deploy` 並行、
+  互不阻塞。
 
 ### GitHub Actions → DockerHub（`.github/workflows/docker-publish.yml`）
 
